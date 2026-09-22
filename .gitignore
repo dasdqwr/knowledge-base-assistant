@@ -1,0 +1,16 @@
+# 忽略整个 PyCharm 配置文件夹
+.idea/
+
+# 敏感信息
+.env
+
+# 向量数据库
+chroma_db/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+
+# 虚拟环境
+venv/
+/data/
