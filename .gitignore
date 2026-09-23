@@ -4,13 +4,18 @@
 # 敏感信息
 .env
 
-# 向量数据库
+# 大文件 / 本地数据
 chroma_db/
+data/*
 
-# Python 缓存
+# Python 自动生成
 __pycache__/
-*.py[cod]
+*.pyc
 
-# 虚拟环境
+# 缓存（以后可能加）
+chunks_cache.pkl
+bm25_cache.pkl
+
+# 虚拟环境（你用的是 Conda，但保留无害）
 venv/
-/data/
+.venv/

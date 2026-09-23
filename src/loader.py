@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter, Language
 
 from src.config import DATA_DIR, CHUNK_SIZE, CHUNK_OVERLAP
 
@@ -24,18 +24,86 @@ def load_documents():
             print(f"❌ 加载失败 {file.name}: {e}")
     return docs
 
+# ========== 切分器 ==========
+
+def _get_recursive_splitter():
+    """通用递归切分器（支持中文）"""
+    return RecursiveCharacterTextSplitter(
+        chunk_size=CHUNK_SIZE,
+        chunk_overlap=CHUNK_OVERLAP,
+        separators=["\n\n", "\n", "。", "！", "？", "；", "，", ""],
+    )
+
+
+def _get_markdown_splitter():
+    """Markdown 标题切分器"""
+    return MarkdownHeaderTextSplitter(
+        headers_to_split_on=[
+            ("#", "h1"),
+            ("##", "h2"),
+            ("###", "h3"),
+        ],
+        strip_headers=False,   # 保留标题在内容里
+    )
+
+def _split_markdown(doc, fallback_splitter):
+    """Markdown 专用切分：先按标题切，再对过大的块递归切"""
+    md_splitter = _get_markdown_splitter()
+    md_chunks = md_splitter.split_text(doc.page_content)
+
+    result = []
+    for chunk in md_chunks:
+        chunk.metadata.update(doc.metadata)   # 保留 source
+        #Markdown 按标题切完后，某节可能还是太长，这时用递归切分器再切
+        if len(chunk.page_content) > CHUNK_SIZE:
+            result.extend(fallback_splitter.split_documents([chunk]))
+        else:
+            result.append(chunk)
+    return result
+
+
+def _split_code(doc, language):
+    """代码专用切分：按语法结构切"""
+    code_splitter = RecursiveCharacterTextSplitter.from_language(
+        language=language,
+        chunk_size=CHUNK_SIZE,
+        chunk_overlap=CHUNK_OVERLAP,
+    )
+    chunks = code_splitter.split_documents([doc])
+    return chunks
+
+# 后缀 → 编程语言映射
+CODE_LANGUAGES = {
+    ".py": Language.PYTHON,
+    ".java": Language.JAVA,
+    ".js": Language.JS,
+    ".ts": Language.TS,
+    ".cpp": Language.CPP,
+    ".c": Language.C,
+    ".go": Language.GO,
+    ".rs": Language.RUST,
+    ".html": Language.HTML,
+}
+
 def split_documents(docs):
     """切分文档"""
     if not docs:
         return []
-    #用 len 这个函数来计算长度,函数本身可以像变量一样传递
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=CHUNK_SIZE,
-        chunk_overlap=CHUNK_OVERLAP,
-        separators=["\n\n", "\n", "。", "！", "？", "；", "，", ""],
-        length_function=len,
-    )
-    chunks = splitter.split_documents(docs)
-    print(f"📄 切分为 {len(chunks)} 个块")
-    return chunks
+    fallback = _get_recursive_splitter()
+    all_chunks = []
+
+    for doc in docs:
+        source = doc.metadata.get("source", "")
+        suffix = Path(source).suffix.lower()
+
+        if suffix in (".md", ".markdown"):
+            chunks = _split_markdown(doc, fallback)
+        elif suffix in CODE_LANGUAGES:
+            chunks = _split_code(doc, CODE_LANGUAGES[suffix])
+        else:
+            chunks = fallback.split_documents([doc])
+
+        all_chunks.extend(chunks)
+    print(f"📄 切分为 {len(all_chunks)} 个块")
+    return all_chunks
 
