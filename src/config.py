@@ -11,6 +11,7 @@ DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL")
 SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY")
 SILICONFLOW_BASE_URL = os.getenv("SILICONFLOW_BASE_URL")
 MODEL_NAME="deepseek:deepseek-v4-flash"
+DB_URL=os.getenv("DB_URL")
 
 #__file__ 是这个文件本身的路径
 # config.py 在 src/ 下，parent.parent 就是项目根目录

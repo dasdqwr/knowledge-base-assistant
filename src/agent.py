@@ -1,8 +1,11 @@
 from langchain_core.tools import tool
 from pathlib import Path
 from langchain.agents import create_agent
+from langgraph.checkpoint.postgres import PostgresSaver
+from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool
 from sentence_transformers import CrossEncoder
-from src.config import TOP_K, CHROMA_DIR
+from src.config import TOP_K, CHROMA_DIR, DB_URL
 from src.loader import load_documents, split_documents
 from src.model import get_model
 from src.rag_chain import build_hybrid_retriever
@@ -10,6 +13,7 @@ from src.vectorstore import load_vectorstore, build_vectorstore
 
 
 def build_agent():
+    """带持久化记忆的 Agent"""
     # ① 加载 + 切分（BM25 需要 chunks）
     print("加载文档...")
     docs = load_documents()
@@ -27,8 +31,9 @@ def build_agent():
     retriever = build_hybrid_retriever(vectorstore, chunks)
     reranker = CrossEncoder("BAAI/bge-reranker-v2-m3")
 
+    # ④ 工具
     @tool
-    def search_knowledge_base(query: str):
+    def search_knowledge_base(query: str) -> str:
         """搜索知识库，返回相关文档片段。当用户询问文档内容时使用。"""
         docs = retriever.invoke(query)[:10]
         if not docs:
@@ -36,7 +41,9 @@ def build_agent():
 
         # Rerank 精排
         pairs = [[query, d.page_content] for d in docs]
+        #逐个打分，返回一个分数列表：分数越高，说明这个块和查询越相关。
         scores = reranker.predict(pairs)
+        #按分数降序排序
         ranked = sorted(zip(docs, scores), key=lambda x: x[1], reverse=True)
         top_docs = [d for d, _ in ranked[:TOP_K]]
 
@@ -53,13 +60,30 @@ def build_agent():
         except Exception as e:
             return f"计算失败: {e}"
 
+    # ⑤ 持久化
+    pool = ConnectionPool(
+        conninfo=DB_URL,
+        min_size=1,
+        max_size=20,
+        kwargs={
+            "autocommit": True,
+            "row_factory": dict_row,
+            "prepare_threshold": 0,
+        },
+    )
+    checkpointer = PostgresSaver(pool)
+    checkpointer.setup()  # 首次运行建表
+
+    # ⑥ 创建 Agent
     model = get_model()
-    return create_agent(
+    agent = create_agent(
         model=model,
         tools=[search_knowledge_base, calculator],
+        checkpointer=checkpointer,
         system_prompt="""你是一个知识库助手。
     - 用户询问文档内容时，使用 search_knowledge_base 工具
     - 需要计算时，使用 calculator 工具
     - 如果知识库没有相关信息，诚实告知
     - 用中文回答""",
     )
+    return agent, pool
