@@ -2,8 +2,9 @@ from langchain_core.tools import tool
 from pathlib import Path
 from langchain.agents import create_agent
 from langgraph.checkpoint.postgres import PostgresSaver
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from psycopg.rows import dict_row
-from psycopg_pool import ConnectionPool
+from psycopg_pool import AsyncConnectionPool
 from sentence_transformers import CrossEncoder
 from src.config import TOP_K, CHROMA_DIR, DB_URL
 from src.loader import load_documents, split_documents
@@ -12,7 +13,7 @@ from src.rag_chain import build_hybrid_retriever
 from src.vectorstore import load_vectorstore, build_vectorstore
 
 
-def build_agent():
+async def build_agent():
     """带持久化记忆的 Agent"""
     # ① 加载 + 切分（BM25 需要 chunks）
     print("加载文档...")
@@ -61,7 +62,7 @@ def build_agent():
             return f"计算失败: {e}"
 
     # ⑤ 持久化
-    pool = ConnectionPool(
+    pool = AsyncConnectionPool(
         conninfo=DB_URL,
         min_size=1,
         max_size=20,
@@ -71,8 +72,8 @@ def build_agent():
             "prepare_threshold": 0,
         },
     )
-    checkpointer = PostgresSaver(pool)
-    checkpointer.setup()  # 首次运行建表
+    checkpointer = AsyncPostgresSaver(pool)
+    await checkpointer.setup()  # 首次运行建表
 
     # ⑥ 创建 Agent
     model = get_model()
