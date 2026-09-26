@@ -1,3 +1,4 @@
+from functools import lru_cache
 from langchain.chat_models import init_chat_model
 from src.config import MODEL_NAME, DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, SILICONFLOW_BASE_URL, SILICONFLOW_API_KEY
 
@@ -9,6 +10,7 @@ def get_model():
         base_url=DEEPSEEK_BASE_URL,
     )
 
+@lru_cache(maxsize=1)
 def get_embeddings():
     from langchain_openai import OpenAIEmbeddings
     return OpenAIEmbeddings(
@@ -16,3 +18,8 @@ def get_embeddings():
         api_key=SILICONFLOW_API_KEY,
         base_url=SILICONFLOW_BASE_URL,
     )
+
+@lru_cache(maxsize=1)
+def get_reranker():
+    from sentence_transformers import CrossEncoder
+    return CrossEncoder("BAAI/bge-reranker-v2-m3")

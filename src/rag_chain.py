@@ -5,7 +5,7 @@ from langchain_core.output_parsers import StrOutputParser
 from sentence_transformers import CrossEncoder
 
 from src.config import TOP_K
-from src.model import get_model
+from src.model import get_model, get_reranker
 from langchain_community.retrievers import BM25Retriever
 import re
 import jieba
@@ -22,7 +22,7 @@ RAG_PROMPT = ChatPromptTemplate.from_messages([
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-reranker = CrossEncoder("BAAI/bge-reranker-v2-m3")
+reranker = get_reranker()
 
 
 # 程序启动

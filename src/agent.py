@@ -8,7 +8,7 @@ from psycopg_pool import AsyncConnectionPool
 from sentence_transformers import CrossEncoder
 from src.config import TOP_K, CHROMA_DIR, DB_URL
 from src.loader import load_documents, split_documents
-from src.model import get_model
+from src.model import get_model, get_reranker
 from src.rag_chain import build_hybrid_retriever
 from src.vectorstore import load_vectorstore, build_vectorstore
 
@@ -30,7 +30,7 @@ async def build_agent():
         vectorstore = load_vectorstore()
     # ③ 混合检索器
     retriever = build_hybrid_retriever(vectorstore, chunks)
-    reranker = CrossEncoder("BAAI/bge-reranker-v2-m3")
+    reranker = get_reranker()
 
     # ④ 工具
     @tool
