@@ -1,3 +1,4 @@
+import json
 import streamlit as st
 import requests
 import uuid
@@ -37,19 +38,30 @@ if prompt := st.chat_input("请输入问题..."):
 
     # 调后端
     with st.chat_message("assistant"):
-        with st.spinner("思考中..."):
-            try:
-                resp = requests.post(
-                    f"{API_URL}/chat",
+        def stream_from_backend():
+            with requests.post(
+                    f"{API_URL}/chat/stream",
                     json={
                         "message": prompt,
                         "thread_id": st.session_state.thread_id,
                     },
-                    timeout=60,
-                )
-                answer = resp.json()["answer"]
-            except Exception as e:
-                answer = f"请求失败: {e}"
-            st.write(answer)
+                    stream=True,
+                    timeout=120,
+            ) as resp:
+                for line in resp.iter_lines():
+                    if not line:
+                        continue
+                    line = line.decode("utf-8")
+                    if line.startswith("data: "):
+                        data = json.loads(line[6:])
+                        if data["type"] == "token":
+                            yield data["content"]
+                        elif data["type"] == "done":
+                            break
+                        elif data["type"] == "error":
+                            yield f"\n[错误: {data['content']}]"
+                            break
+
+        answer = st.write_stream(stream_from_backend())
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
