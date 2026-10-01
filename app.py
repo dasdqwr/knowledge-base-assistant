@@ -1,11 +1,15 @@
 import os
+import shutil
 from contextlib import asynccontextmanager
+from pathlib import Path
 
+from fastapi import BackgroundTasks
+from src.config import DATA_DIR
 os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
-from src.agent import build_agent
+from src.agent import build_agent, build_retriever, build_agent_with_memory
 import json
 from fastapi.responses import StreamingResponse
 
@@ -21,7 +25,8 @@ async def lifespan(app: FastAPI):
     #声明：我要改的是全局变量
     global agent, pool
     print("🚀 正在启动服务，初始化 Agent...")
-    agent, pool = await build_agent()
+    # 首次初始化
+    agent, pool = await build_agent_with_memory()
     yield
     # 关闭时清理
     print("🛑 正在关闭服务，释放连接池...")
@@ -103,3 +108,27 @@ async def health():
     """健康检查"""
     return {"status": "ok"}
 
+@app.post("/upload")
+async def upload(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+    """上传文档并重建索引"""
+
+    # 1. 保存文件
+    file_path = Path(DATA_DIR) / file.filename
+    with open(file_path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+
+    # 2. 后台异步重建
+    background_tasks.add_task(rebuild_agent)
+
+    return {"status": "ok", "message": "文件已保存，正在后台重建索引"}
+
+
+
+async def rebuild_agent():
+    """后台重建，不阻塞请求"""
+    global agent
+    print("🔄 后台重建索引...")
+    retriever = build_retriever()
+    agent = await build_agent(retriever, pool)
+    print("✅ 重建完成")

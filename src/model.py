@@ -19,7 +19,26 @@ def get_embeddings():
         base_url=SILICONFLOW_BASE_URL,
     )
 
+class LazyReranker:
+    """延迟加载的 Reranker，第一次调用 predict 时才加载模型"""
+
+    def __init__(self):
+        self._model = None
+
+    def _load(self):
+        if self._model is None:
+            print("🔄 首次加载 Rerank 模型（约 10 秒）...")
+            from sentence_transformers import CrossEncoder
+            self._model = CrossEncoder("BAAI/bge-reranker-v2-m3")
+            print("✅ Rerank 模型加载完成")
+        return self._model
+
+    def predict(self, pairs):
+        """对外接口和 CrossEncoder 一致"""
+        return self._load().predict(pairs)
+
+
 @lru_cache(maxsize=1)
 def get_reranker():
-    from sentence_transformers import CrossEncoder
-    return CrossEncoder("BAAI/bge-reranker-v2-m3")
+    """返回一个延迟加载的 Reranker（不触发实际加载）"""
+    return LazyReranker()

@@ -24,6 +24,26 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
 
+    st.divider()
+    st.write("### 📄 文档管理")
+    uploaded_file = st.file_uploader(
+        "上传文档",
+        type=["pdf", "txt", "md", "docx"],
+        help="支持 PDF、TXT、Markdown、docx",
+    )
+    if uploaded_file is not None:
+        if st.button("上传并重建索引"):
+            with st.spinner("处理中，可能需要几十秒..."):
+                try:
+                    files = {"file": (uploaded_file.name, uploaded_file.getvalue())}
+                    resp = requests.post(f"{API_URL}/upload", files=files, timeout=300)
+                    if resp.status_code == 200:
+                        st.success(f"✅ {uploaded_file.name} 上传成功")
+                    else:
+                        st.error(f"❌ 上传失败: {resp.text}")
+                except Exception as e:
+                    st.error(f"❌ 请求失败: {e}")
+
 # ========== 显示历史消息 ==========
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):

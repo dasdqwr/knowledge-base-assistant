@@ -1,0 +1,6 @@
+[server]
+websocketPingInterval = 60
+maxUploadSize = 500
+
+[browser]
+gatherUsageStats = false

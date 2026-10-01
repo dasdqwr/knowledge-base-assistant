@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from langchain_community.document_loaders import PyPDFLoader, TextLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter, Language
 
 from src.config import DATA_DIR, CHUNK_SIZE, CHUNK_OVERLAP
@@ -20,6 +20,8 @@ def load_documents():
             elif file.suffix in ('.txt', '.md'):
                 docs.extend(TextLoader(str(file), encoding="utf-8").load())
                 print(f"✅ 加载文本: {file.name}")
+            elif file.suffix == ".docx":
+                docs.extend(Docx2txtLoader(str(file)).load())
         except Exception as e:
             print(f"❌ 加载失败 {file.name}: {e}")
     return docs
