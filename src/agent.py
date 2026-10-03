@@ -6,6 +6,8 @@ from langchain.agents import create_agent
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
+
+from src.cache import make_key, get_cached, set_cached
 from src.config import TOP_K, CHROMA_DIR, DB_URL
 from src.loader import load_documents, split_documents
 from src.model import get_model, get_reranker
@@ -35,8 +37,17 @@ async def build_agent(retriever, pool):
 
     # ④ 工具
     @tool
-    def search_knowledge_base(query: str) -> str:
+    async def search_knowledge_base(query: str) -> str:
         """搜索知识库，返回相关文档片段。当用户询问文档内容时使用。"""
+        print(f"🔍 工具被调用，query = {query}")
+        # 查缓存
+        cache_key = make_key("retrieval", query)
+        print(f"🔑 cache_key = {cache_key}")
+        cached = await get_cached(cache_key)
+        if cached:
+            print(f"✅ 命中缓存: {query[:30]}")
+            return cached
+        # 没命中，走完整检索
         docs = retriever.invoke(query)[:10]
         if not docs:
             return "没有找到相关内容。"
@@ -49,10 +60,17 @@ async def build_agent(retriever, pool):
         ranked = sorted(zip(docs, scores), key=lambda x: x[1], reverse=True)
         top_docs = [d for d, _ in ranked[:TOP_K]]
 
-        return "\n\n".join(
+        result = "\n\n".join(
             f"[来源: {d.metadata.get('source', '未知')}]\n{d.page_content}"
             for d in top_docs
         )
+
+        # 写入缓存
+        success = await set_cached(cache_key, result, ttl=3600)
+        if success:
+            print(f"💾 已写入缓存: {cache_key}")
+
+        return result
 
     @tool
     def calculator(expression: str) -> str:
@@ -63,6 +81,7 @@ async def build_agent(retriever, pool):
             return f"计算失败: {e}"
 
     await pool.open()  # 显式打开连接池
+    # 持久化 checkpointer
     checkpointer = AsyncPostgresSaver(pool)
     await checkpointer.setup()  # 首次运行建表
 
@@ -79,7 +98,6 @@ async def build_agent(retriever, pool):
     - 用中文回答""",
     )
 
-#分离创建agent和pool
 async def build_agent_with_memory():
     """完整初始化：检索器 + 连接池 + Agent"""
     t0 = time.perf_counter()

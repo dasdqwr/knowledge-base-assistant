@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import BackgroundTasks
+
+from src.cache import close_redis, clear_pattern
 from src.config import DATA_DIR
 os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
@@ -25,12 +27,12 @@ async def lifespan(app: FastAPI):
     #声明：我要改的是全局变量
     global agent, pool
     print("🚀 正在启动服务，初始化 Agent...")
-    # 首次初始化
     agent, pool = await build_agent_with_memory()
     yield
     # 关闭时清理
-    print("🛑 正在关闭服务，释放连接池...")
+    print("🛑 正在关闭服务，释放连接池，关闭 Redis 连接...")
     await pool.close()
+    await close_redis()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -126,9 +128,14 @@ async def upload(background_tasks: BackgroundTasks, file: UploadFile = File(...)
 
 
 async def rebuild_agent():
-    """后台重建，不阻塞请求"""
+    """后台重建 Agent（复用全局 pool）"""
     global agent
     print("🔄 后台重建索引...")
-    retriever = build_retriever()
-    agent = await build_agent(retriever, pool)
-    print("✅ 重建完成")
+    try:
+        retriever = build_retriever()
+        agent = await build_agent(retriever, pool)
+        # 清空旧的检索缓存
+        count = await clear_pattern("retrieval:*")
+        print(f"✅ 重建完成，清空 {count} 条缓存")
+    except Exception as e:
+        print(f"❌ 重建失败: {e}")
