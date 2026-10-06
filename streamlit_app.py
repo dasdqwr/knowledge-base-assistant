@@ -26,6 +26,8 @@ with st.sidebar:
 
     st.divider()
     st.write("### 📄 文档管理")
+
+    # 上传
     uploaded_file = st.file_uploader(
         "上传文档",
         type=["pdf", "txt", "md", "docx"],
@@ -43,6 +45,50 @@ with st.sidebar:
                         st.error(f"❌ 上传失败: {resp.text}")
                 except Exception as e:
                     st.error(f"❌ 请求失败: {e}")
+
+    st.divider()
+
+    # 文档列表 + 删除
+    try:
+        resp = requests.get(f"{API_URL}/documents", timeout=10)
+        docs = resp.json().get("documents", [])
+    except Exception:
+        docs = []
+
+    if docs:
+        st.caption(f"共 {len(docs)} 个文档")
+        for doc in docs:
+            col1, col2 = st.columns([4, 1])
+            col1.write(f"📄 {doc['name']}  \n<small>({doc['size_kb']} KB)</small>", unsafe_allow_html=True)
+
+            # 删除按钮
+            if col2.button("🗑️", key=f"del_{doc['name']}", help="删除"):
+                st.session_state[f"confirm_delete_{doc['name']}"] = True
+
+            # 确认删除
+            if st.session_state.get(f"confirm_delete_{doc['name']}"):
+                st.warning(f"确认删除 **{doc['name']}** ？")
+                c1, c2 = st.columns(2)
+                if c1.button("✅ 确认", key=f"yes_{doc['name']}"):
+                    try:
+                        resp = requests.post(
+                            f"{API_URL}/delete",
+                            params={"filename": doc["name"]},
+                            timeout=300,
+                        )
+                        if resp.status_code == 200:
+                            st.success(f"已删除 {doc['name']}")
+                            st.session_state[f"confirm_delete_{doc['name']}"] = False
+                            st.rerun()
+                        else:
+                            st.error(f"删除失败: {resp.text}")
+                    except Exception as e:
+                        st.error(f"请求失败: {e}")
+                if c2.button("❌ 取消", key=f"no_{doc['name']}"):
+                    st.session_state[f"confirm_delete_{doc['name']}"] = False
+                    st.rerun()
+    else:
+        st.caption("暂无文档")
 
 # ========== 显示历史消息 ==========
 for msg in st.session_state.messages:

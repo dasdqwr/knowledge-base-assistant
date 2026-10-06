@@ -59,7 +59,7 @@ async def get_cached(key: str) -> str | None:
         print(f"⚠️ Redis 读取失败: {e}")
         return None
 
-async def set_cached(key: str, value: str, ttl: int = 3600) -> None:
+async def set_cached(key: str, value: str, ttl: int = 3600) -> bool:
     """
     写缓存。
 
@@ -67,6 +67,10 @@ async def set_cached(key: str, value: str, ttl: int = 3600) -> None:
         key：make_key() 生成的 key
         value：要缓存的字符串
         ttl：过期时间（秒），默认 3600（1 小时）
+
+    返回：
+        成功：True
+        失败：False（并打印警告）
 
     说明：
         用 setex（set with expire），保证缓存会自动过期，

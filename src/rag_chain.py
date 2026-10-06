@@ -2,7 +2,6 @@ from langchain_classic.retrievers import EnsembleRetriever
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
-from sentence_transformers import CrossEncoder
 
 from src.config import TOP_K
 from src.model import get_model, get_reranker

@@ -3,8 +3,9 @@ import shutil
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import BackgroundTasks
+from fastapi import BackgroundTasks, HTTPException
 
+from src.document  import list_documents, delete_document
 from src.cache import close_redis, clear_pattern
 from src.config import DATA_DIR
 os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
@@ -139,3 +140,23 @@ async def rebuild_agent():
         print(f"✅ 重建完成，清空 {count} 条缓存")
     except Exception as e:
         print(f"❌ 重建失败: {e}")
+
+@app.get("/documents")
+async def get_documents():
+    """列出知识库中的所有文档"""
+    return {"documents": list_documents()}
+
+
+@app.post("/delete")
+async def delete_file(
+    filename: str,
+    background_tasks: BackgroundTasks,
+):
+    """删除文档并后台重建索引"""
+    if not delete_document(filename):
+        raise HTTPException(status_code=404, detail="文件不存在或路径不合法")
+
+    # 后台重建索引（和上传一样）
+    background_tasks.add_task(rebuild_agent)
+
+    return {"status": "ok", "message": f"已删除 {filename}，正在后台重建索引"}

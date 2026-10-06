@@ -1,5 +1,14 @@
 from pathlib import Path
 import os
+
+# ========== 必须放在最前面 ==========
+# 把控制台切到 UTF-8。config 是所有模块的公共依赖，也是每个入口最早被导入的
+# src 模块，所以把引导挂在这里，一处生效、全项目覆盖（含 scripts/）。
+# 详见 src/utf8.py 里的说明：GBK 控制台下 print emoji 会抛异常并弄死服务。
+from src.utf8 import enable_utf8_console
+
+enable_utf8_console()
+
 from dotenv import load_dotenv
 
 load_dotenv(override=True)

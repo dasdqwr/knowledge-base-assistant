@@ -1,5 +1,6 @@
 import time
 
+from langchain.agents.middleware import SummarizationMiddleware
 from langchain_core.tools import tool
 from pathlib import Path
 from langchain.agents import create_agent
@@ -12,7 +13,7 @@ from src.config import TOP_K, CHROMA_DIR, DB_URL
 from src.loader import load_documents, split_documents
 from src.model import get_model, get_reranker
 from src.rag_chain import build_hybrid_retriever
-from src.vectorstore import load_vectorstore, build_vectorstore
+from src.vectorstore import build_vectorstore
 
 def build_retriever():
     # ① 加载 + 切分（BM25 需要 chunks）
@@ -91,6 +92,13 @@ async def build_agent(retriever, pool):
         model=model,
         tools=[search_knowledge_base, calculator],
         checkpointer=checkpointer,
+        middleware=[  # ← 新增
+            SummarizationMiddleware(
+                model=model,  # 用同一个模型做摘要
+                trigger=("tokens", 8000),  # 超过 8000 token 触发
+                keep=("messages", 20),  # 保留最近 20 条
+            ),
+        ],
         system_prompt="""你是一个知识库助手。
     - 用户询问文档内容时，使用 search_knowledge_base 工具
     - 需要计算时，使用 calculator 工具

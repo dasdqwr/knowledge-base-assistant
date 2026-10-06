@@ -1,0 +1,132 @@
+[project]
+name = "knowledge-base-assistant"
+version = "0.1.0"
+description = "基于 LangChain + LangGraph 的个人知识库助手，支持混合检索、Rerank、持久化记忆和 Web 界面"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "dasdqwr" }
+]
+keywords = ["rag", "langchain", "agent", "knowledge-base", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# ========== 核心依赖 ==========
+dependencies = [
+    # LLM 框架
+    "langchain",
+    "langchain-openai",
+    "langchain-community",
+    "langchain-huggingface",
+    "langchain-text-splitters",
+
+    # Agent 框架
+    "langgraph",
+    "langgraph-checkpoint-postgres",
+
+    # 向量库
+    "chromadb",
+
+    # 数据库
+    "psycopg[binary,pool]",
+    "redis",
+
+    # 嵌入和重排模型
+    "sentence-transformers",
+
+    # 检索
+    "rank-bm25",
+    "jieba",
+
+    # Web
+    "fastapi",
+    "uvicorn",
+    "streamlit",
+    "requests",
+
+    # 工具
+    "python-dotenv",
+    "docx2txt",
+    "typer",
+]
+
+# ========== 可选依赖 ==========
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "mypy",
+    "ruff",
+    "ipython",
+]
+eval = [
+    "ragas",
+    "datasets",
+]
+
+# ========== 入口命令 ==========
+[project.scripts]
+# pip install -e . 后，在任意目录可用 kb 命令
+# 格式：命令名 = "模块:对象"
+kb = "cli:app"
+
+# ========== 项目链接 ==========
+[project.urls]
+Homepage = "https://github.com/dasdqwr/knowledge-base-assistant"
+Repository = "https://github.com/dasdqwr/knowledge-base-assistant"
+Issues = "https://github.com/dasdqwr/knowledge-base-assistant/issues"
+
+# ========== 构建系统 ==========
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+# ========== setuptools 配置 ==========
+[tool.setuptools]
+py-modules = ["cli", "app", "run", "main"]   # ← 顶层模块都列上
+
+# 包：src/
+packages = ["src"]
+
+# 包含的文件（打包时打进 wheel）
+[tool.setuptools.package-data]
+src = ["*.py"]
+
+# ========== 工具配置 ==========
+
+# pytest 配置
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# mypy 配置
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+disallow_untyped_defs = false
+
+# ruff 配置（代码检查 + 格式化）
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+# black 配置（如果以后用）
+[tool.black]
+line-length = 100
+target-version = ["py312"]

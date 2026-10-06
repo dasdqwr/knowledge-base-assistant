@@ -22,3 +22,6 @@ bm25_cache.pkl
 # 虚拟环境（你用的是 Conda，但保留无害）
 venv/
 .venv/
+
+# 构建产物
+*.egg-info/

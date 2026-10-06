@@ -12,7 +12,7 @@ def build_vectorstore(documents):
     return Chroma.from_documents(
         documents=documents,
         embedding=get_embeddings(),
-        persist_directory="./chroma_db",  # 存到本地目录
+        persist_directory=CHROMA_DIR,  # 与 load_vectorstore 用同一个绝对路径
     )
 
 def load_vectorstore():
