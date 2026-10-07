@@ -1,3 +1,4 @@
+import asyncio
 import os
 import shutil
 from contextlib import asynccontextmanager
@@ -20,6 +21,9 @@ from fastapi.responses import StreamingResponse
 # --- 全局变量 ---
 agent = None
 pool = None
+
+# 串行化索引重建，避免并发 rmtree 同一个 chroma_db（见 rebuild_agent）
+index_lock = asyncio.Lock()
 
 # --- 生命周期管理 ---
 @asynccontextmanager
@@ -129,17 +133,29 @@ async def upload(background_tasks: BackgroundTasks, file: UploadFile = File(...)
 
 
 async def rebuild_agent():
-    """后台重建 Agent（复用全局 pool）"""
+    """后台重建 Agent（复用全局 pool）
+
+    index_lock 的作用有两个：
+    1. /upload 和 /delete 都走 background_tasks，用户快速连点会并发进入。
+       两个 rebuild 同时 rmtree/写入同一个 chroma_db 会互相破坏。
+       加锁后串行化。
+    2. 顺带得到幂等性：排队中的第二个任务拿到锁时，索引已经被前一个建好了，
+       force 会跳过内容未变的重复重建。
+    """
     global agent
-    print("🔄 后台重建索引...")
-    try:
-        retriever = build_retriever()
-        agent = await build_agent(retriever, pool)
-        # 清空旧的检索缓存
-        count = await clear_pattern("retrieval:*")
-        print(f"✅ 重建完成，清空 {count} 条缓存")
-    except Exception as e:
-        print(f"❌ 重建失败: {e}")
+    async with index_lock:
+        print("🔄 后台重建索引...")
+        try:
+            # force=True：上传/删除刚改动了 data/，直接重建更干脆，
+            # 不必先做一轮哈希比对。内容真的没变时（例如重复上传同一个文件），
+            # build_retriever 内部仍会因"内容未变"而省下嵌入成本。
+            retriever = build_retriever(force=True)
+            agent = await build_agent(retriever, pool)
+            # 清空旧的检索缓存
+            count = await clear_pattern("retrieval:*")
+            print(f"✅ 重建完成，清空 {count} 条缓存")
+        except Exception as e:
+            print(f"❌ 重建失败: {e}")
 
 @app.get("/documents")
 async def get_documents():

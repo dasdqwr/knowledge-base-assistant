@@ -1,3 +1,5 @@
+import gc
+import shutil
 import time
 
 from langchain.agents.middleware import SummarizationMiddleware
@@ -10,24 +12,137 @@ from psycopg_pool import AsyncConnectionPool
 
 from src.cache import make_key, get_cached, set_cached
 from src.config import TOP_K, CHROMA_DIR, DB_URL
+from src.index_meta import (
+    clear_manifest,
+    current_params,
+    file_stats,
+    is_index_fresh,
+    write_manifest,
+)
 from src.loader import load_documents, split_documents
 from src.model import get_model, get_reranker
 from src.rag_chain import build_hybrid_retriever
-from src.vectorstore import build_vectorstore
+from src.vectorstore import build_vectorstore, load_vectorstore
 
-def build_retriever():
-    # ① 加载 + 切分（BM25 需要 chunks）
+
+# ========== 向量库句柄管理 ==========
+# 为什么需要这个：Chroma 会把 HNSW 的 .bin 文件映射进内存（或持有打开句柄），
+# 只要 vectorstore 对象还活着，Windows 就不允许删除那些文件。
+# 旧代码每次启动都无条件 rmtree，那时进程里的 vectorstore 还没建出来，
+# 所以从没暴露过这个问题；一旦支持"复用"，同进程里就会先加载再删除，
+# rmtree 立刻报 PermissionError: [WinError 32]。
+# 所以重建前必须显式释放句柄。
+
+_active_vectorstores: list = []
+
+
+def release_all_vectorstores() -> int:
+    """释放所有由本模块加载/构建过的向量库句柄，返回释放个数。
+
+    多释放几次也无害，所以这里不追求精确计数，只求"重建前一定放开文件"。
+    """
+    global _active_vectorstores
+    released = 0
+    for vs in _active_vectorstores:
+        client = getattr(vs, "_client", None)
+        if client is None:
+            continue
+        try:
+            client.close()
+            released += 1
+        except Exception as e:
+            print(f"⚠️ 关闭向量库客户端失败（{type(e).__name__}: {e}）")
+    _active_vectorstores = []
+    return released
+
+
+def remove_chroma_dir(retries: int = 10, delay: float = 0.3) -> None:
+    """可靠地删除向量库目录。
+
+    两层保险：
+    1. 先释放句柄（release_all_vectorstores），再 gc 一轮，让底层映射文件有机会关闭；
+    2. Windows 上句柄释放往往不是瞬时的，所以带退避重试，
+       而不是一次失败就抛出去。
+
+    改不动就抛最后一个异常，让调用方看到真实原因。
+    """
+    if not Path(CHROMA_DIR).exists():
+        return
+
+    release_all_vectorstores()
+    gc.collect()
+
+    last_err = None
+    for attempt in range(1, retries + 1):
+        try:
+            shutil.rmtree(CHROMA_DIR)
+            if attempt > 1:
+                print(f"   第 {attempt} 次尝试删除成功")
+            return
+        except Exception as e:
+            last_err = e
+            gc.collect()
+            time.sleep(delay)
+
+    raise last_err
+
+
+def build_retriever(force: bool = False):
+    """构建检索器。
+
+    默认会先判断现有向量库能否复用（内容未变就不重新嵌入），
+    需要重建时才删库 + 全量构建。详见 src/index_meta.py。
+
+    force=True 时无条件重建，忽略新鲜度判断。
+    """
+    # ① 加载 + 切分（BM25 需要 chunks，所以本地这步省不掉；
+    #    好在实测很便宜：3 个文档 277 个块只要 0.02 秒）
     print("加载文档...")
     docs = load_documents()
     if not docs:
         raise FileNotFoundError("data/ 目录下没有文档")
     chunks = split_documents(docs)
-    # ② 全量重建向量库
-    if Path(CHROMA_DIR).exists():
-        import shutil
-        shutil.rmtree(CHROMA_DIR)
-    vectorstore = build_vectorstore(chunks)
-    # ③ 混合检索器
+
+    # ② 判断向量库能否复用
+    vectorstore = None
+    if force:
+        print("重建向量库：指定了 force")
+    else:
+        snapshot = file_stats()
+        params = current_params()
+        fresh, reason, refresh_meta = is_index_fresh(snapshot, params)
+
+        if fresh and Path(CHROMA_DIR).exists():
+            try:
+                vectorstore = load_vectorstore()
+                _active_vectorstores.append(vectorstore)
+                print(f"♻️ 复用已有向量库：{reason}")
+                if refresh_meta:
+                    # 内容没变，只是 mtime/size 动了，刷新清单元数据即可
+                    write_manifest(params, snapshot, len(chunks))
+            except Exception as e:
+                print(f"⚠️ 加载已有向量库失败（{type(e).__name__}: {e}），改为重建")
+                vectorstore = None
+        else:
+            if not fresh:
+                print(f"重建向量库：{reason}")
+            else:
+                print("重建向量库：清单显示新鲜但向量库目录不存在")
+
+    # ③ 需要重建时：先删凭证，再删库，最后重建
+    if vectorstore is None:
+        # 顺序很重要：先让清单失效，再动向量库本身。
+        # 这样中途崩溃会留下"没有清单"的状态，下次必然重建，
+        # 不会把半成品索引当成有效索引一直用下去。
+        clear_manifest()
+        remove_chroma_dir()  # ← 释放句柄后清空旧索引
+        vectorstore = build_vectorstore(chunks)  # ← 从零写新索引
+        _active_vectorstores.append(vectorstore)
+        # 构建成功，才重新发"索引完整"的凭证
+        write_manifest(current_params(), file_stats(), len(chunks))
+        print(f"✅ 向量库重建完成，{len(chunks)} 个块")
+
+    # ④ 混合检索器
     retriever = build_hybrid_retriever(vectorstore, chunks)
     return retriever
 
@@ -106,10 +221,13 @@ async def build_agent(retriever, pool):
     - 用中文回答""",
     )
 
-async def build_agent_with_memory():
-    """完整初始化：检索器 + 连接池 + Agent"""
+async def build_agent_with_memory(force: bool = False):
+    """完整初始化：检索器 + 连接池 + Agent
+
+    force=True 时无条件重建向量库（见 build_retriever）。
+    """
     t0 = time.perf_counter()
-    retriever = build_retriever()
+    retriever = build_retriever(force=force)
     t1 = time.perf_counter()
     print(f"⏱️ 构建检索器: {t1 - t0:.2f}s")
 

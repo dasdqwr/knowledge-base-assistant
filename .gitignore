@@ -8,6 +8,9 @@
 chroma_db/
 data/*
 !data/.gitkeep
+# 索引清单：机器本地状态，与 chroma_db/ 配套，不该提交
+index_manifest.json
+index_manifest.json.tmp
 
 # Python 自动生成
 __pycache__/

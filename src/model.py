@@ -1,6 +1,13 @@
 from functools import lru_cache
 from langchain.chat_models import init_chat_model
-from src.config import MODEL_NAME, DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, SILICONFLOW_BASE_URL, SILICONFLOW_API_KEY
+from src.config import (
+    EMBEDDING_MODEL,
+    MODEL_NAME,
+    DEEPSEEK_API_KEY,
+    DEEPSEEK_BASE_URL,
+    SILICONFLOW_BASE_URL,
+    SILICONFLOW_API_KEY,
+)
 
 
 def get_model():
@@ -14,7 +21,7 @@ def get_model():
 def get_embeddings():
     from langchain_openai import OpenAIEmbeddings
     return OpenAIEmbeddings(
-        model="BAAI/bge-m3",
+        model=EMBEDDING_MODEL,
         api_key=SILICONFLOW_API_KEY,
         base_url=SILICONFLOW_BASE_URL,
     )

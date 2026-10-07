@@ -189,17 +189,27 @@ def delete(
 # ========== 5. rebuild：重建索引 ==========
 
 @app.command()
-def rebuild():
-    """重建向量库和 Agent"""
+def rebuild(
+    force: bool = typer.Option(
+        True,
+        "--force/--no-force",
+        help="是否无条件重建向量库（默认是；--no-force 则内容未变就复用）",
+    ),
+):
+    """重建向量库和 Agent
+
+    注意：这条命令的语义就是"重建"。如果加了索引复用判断却传 force=False，
+    文档没变时它会变成空操作，与用户意图不符。所以默认 force=True。
+    """
     from src.agent import build_agent_with_memory
     from src.cache import clear_pattern
 
     async def _run():
-        typer.echo("🔄 重建中...")
-        agent, pool = await build_agent_with_memory()
+        typer.echo("🔄 重建中..." if force else "🔄 检查索引...")
+        agent, pool = await build_agent_with_memory(force=force)
         try:
             count = await clear_pattern("retrieval:*")
-            typer.echo(f"✅ 重建完成，清空 {count} 条缓存")
+            typer.echo(f"✅ 完成，清空 {count} 条检索缓存")
         finally:
             await pool.close()
 
