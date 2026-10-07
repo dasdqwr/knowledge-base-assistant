@@ -36,12 +36,52 @@ from src.vectorstore import build_vectorstore, load_vectorstore
 _active_vectorstores: list = []
 
 
-def release_all_vectorstores() -> int:
-    """释放所有由本模块加载/构建过的向量库句柄，返回释放个数。
+def _clear_shared_system_cache() -> bool:
+    """清空 chromadb 的进程级 System 缓存，返回是否成功。
 
-    多释放几次也无害，所以这里不追求精确计数，只求"重建前一定放开文件"。
+    追查到的持有链（这才是真正让句柄不释放的东西）：
+
+        Chroma → _client → Client → _system → System
+                                                   ├─ sqlite 连接 → chroma.sqlite3
+                                                   └─ mmap        → data_level0.bin
+        System 被 SharedSystemClient._identifier_to_system
+        这个「类属性字典」按住，key 是持久化目录的绝对路径。
+
+    所以只 del 掉自己的 vectorstore 没用：Chroma 对象会被 gc 回收，
+    但 System 仍被那张类级字典引用着，句柄继续开着，rmtree 报 WinError 32。
+
+    clear_system_cache() 把 _identifier_to_system / _identifier_to_refcount
+    两张表整个丢弃（= {}）。注意它不调用 system.stop()，是靠丢弃引用让
+    System 被回收、在析构时释放句柄 —— 所以后面还要 gc.collect() 推一把。
+    """
+    try:
+        from chromadb.api.shared_system_client import SharedSystemClient
+
+        SharedSystemClient.clear_system_cache()
+        return True
+    except Exception as e:
+        print(f"⚠️ 清理 chromadb System 缓存失败（{type(e).__name__}: {e}）")
+        return False
+
+
+def release_all_vectorstores() -> int:
+    """释放向量库句柄，返回显式 close 掉的客户端个数。
+
+    两条路一起走，因为它们的覆盖面不同：
+
+    1. client.close()（逐个）—— 走 chromadb 的正常释放路径
+       （_release_system：引用计数递减，归零时 system.stop()）。
+       但它只覆盖我们登记过的对象。
+
+    2. clear_system_cache()（兜底）—— 不管有没有登记，把整个进程的
+       System 缓存清空。防的是"某条代码路径直接 Chroma(...) 建实例、
+       没经过 build_retriever，因而没被登记"的情况。
+
+    多释放几次无害，所以不追求精确计数，只求"重建前一定放开文件"。
     """
     global _active_vectorstores
+
+    # ① 逐个显式关闭（正常释放路径）
     released = 0
     for vs in _active_vectorstores:
         client = getattr(vs, "_client", None)
@@ -53,14 +93,19 @@ def release_all_vectorstores() -> int:
         except Exception as e:
             print(f"⚠️ 关闭向量库客户端失败（{type(e).__name__}: {e}）")
     _active_vectorstores = []
+
+    # ② 兜底清空进程级缓存（覆盖未登记的对象）
+    _clear_shared_system_cache()
+
     return released
 
 
 def remove_chroma_dir(retries: int = 10, delay: float = 0.3) -> None:
     """可靠地删除向量库目录。
 
-    两层保险：
-    1. 先释放句柄（release_all_vectorstores），再 gc 一轮，让底层映射文件有机会关闭；
+    三层保险：
+    1. 先释放句柄（release_all_vectorstores：逐个 close + 清 chromadb 的
+       进程级 System 缓存），再 gc 一轮，让底层映射文件真正关闭；
     2. Windows 上句柄释放往往不是瞬时的，所以带退避重试，
        而不是一次失败就抛出去。
 
