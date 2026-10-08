@@ -37,6 +37,18 @@ DATA_DIR = str(PROJECT_ROOT / "data")
 # 详见 src/index_meta.py 里的"清单写入时机"说明。
 MANIFEST_PATH = str(PROJECT_ROOT / "index_manifest.json")
 
+# 支持索引的文档后缀。集中放这里，避免 loader / document / cli / streamlit 各写一份而漂移
+# （曾经 document.py 认 .markdown 但 cli 不认，导致"列表里有、上传却被拒"）。
+SUPPORTED_SUFFIXES = (".pdf", ".txt", ".md", ".markdown", ".docx")
+
 CHUNK_SIZE = 800
 CHUNK_OVERLAP = 100
 TOP_K = 8
+
+# 单路召回的候选数（BM25 与向量各取这么多，再融合）
+RETRIEVAL_K = 5
+# 混合检索权重 [BM25, 向量]。BM25 权重高，因为本项目要解决的是
+# "精确 API 名搜不到"这个问题（见 README 技术点 1）。
+ENSEMBLE_WEIGHTS = [0.8, 0.2]
+# 进入 Rerank 的候选数量
+RERANK_CANDIDATES = 10

@@ -33,7 +33,7 @@ enable_utf8_console()
 
 import typer
 
-from src.config import DATA_DIR, PROJECT_ROOT
+from src.config import DATA_DIR, PROJECT_ROOT, SUPPORTED_SUFFIXES
 
 app = typer.Typer(
     name="kb",
@@ -149,8 +149,11 @@ def upload(
         typer.echo(f"❌ 文件不存在: {file}", err=True)
         raise typer.Exit(1)
 
-    if src.suffix.lower() not in (".pdf", ".txt", ".md", ".docx"):
-        typer.echo(f"❌ 不支持的类型: {src.suffix}", err=True)
+    if src.suffix.lower() not in SUPPORTED_SUFFIXES:
+        typer.echo(
+            f"❌ 不支持的类型: {src.suffix}（支持 {'/'.join(SUPPORTED_SUFFIXES)}）",
+            err=True,
+        )
         raise typer.Exit(1)
 
     dst = Path(DATA_DIR) / src.name
@@ -191,21 +194,22 @@ def delete(
 @app.command()
 def rebuild(
     force: bool = typer.Option(
-        True,
+        False,
         "--force/--no-force",
-        help="是否无条件重建向量库（默认是；--no-force 则内容未变就复用）",
+        help="强制重建（默认否：内容没变就复用已有索引）",
     ),
 ):
     """重建向量库和 Agent
 
-    注意：这条命令的语义就是"重建"。如果加了索引复用判断却传 force=False，
-    文档没变时它会变成空操作，与用户意图不符。所以默认 force=True。
+    默认不强制：build_retriever 会用内容哈希判断索引是否新鲜，
+    文档没变就复用，省下嵌入调用。需要无条件重建时加 --force。
+    （早期版本默认 force=True，导致每次都白跑一遍嵌入。）
     """
     from src.agent import build_agent_with_memory
     from src.cache import clear_pattern
 
     async def _run():
-        typer.echo("🔄 重建中..." if force else "🔄 检查索引...")
+        typer.echo("🔄 强制重建中..." if force else "🔄 检查索引...")
         agent, pool = await build_agent_with_memory(force=force)
         try:
             count = await clear_pattern("retrieval:*")
@@ -245,8 +249,16 @@ def evaluate():
     """运行检索层评估"""
     import subprocess
 
+    # 评估脚本属于"计划中"能力，还没实现。给一句明确提示，
+    # 而不是让 subprocess 抛一个难懂的 "can't open file" 错误。
+    script = Path(PROJECT_ROOT) / "scripts" / "evaluate.py"
+    if not script.exists():
+        typer.echo(f"❌ 评估脚本尚未实现: {script}", err=True)
+        typer.echo("   见 README 的『后续计划』，RAGAS 评估体系还没有落地。")
+        raise typer.Exit(1)
+
     typer.echo("📊 运行评估...")
-    subprocess.run([sys.executable, "scripts/evaluate.py"])
+    subprocess.run([sys.executable, str(script)])
 
 
 # ========== 9. info：查看项目信息 ==========
@@ -280,7 +292,7 @@ def info():
     if data_path.exists():
         docs = [
             f for f in data_path.iterdir()
-            if f.is_file() and f.suffix.lower() in (".pdf", ".txt", ".md", ".docx")
+            if f.is_file() and f.suffix.lower() in SUPPORTED_SUFFIXES
         ]
         typer.echo(f"\n📄 文档数量: {len(docs)}")
         for d in docs:

@@ -16,6 +16,7 @@ index_manifest.json.tmp
 __pycache__/
 *.pyc
 *.pyo
+.pytest_cache/
 
 # 缓存（以后可能加）
 chunks_cache.pkl

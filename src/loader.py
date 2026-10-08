@@ -3,7 +3,7 @@ from pathlib import Path
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter, Language
 
-from src.config import DATA_DIR, CHUNK_SIZE, CHUNK_OVERLAP
+from src.config import DATA_DIR, CHUNK_SIZE, CHUNK_OVERLAP, SUPPORTED_SUFFIXES
 
 
 def load_documents():
@@ -12,16 +12,24 @@ def load_documents():
     for file in Path(DATA_DIR).iterdir():
         if file.is_dir():
             continue
+        # 跳过点文件（.gitkeep 之类），否则会白跑一次加载并打印"加载失败"
+        if file.name.startswith("."):
+            continue
+        # 后缀统一小写比较，否则 .PDF 会被静默跳过
+        suffix = file.suffix.lower()
+        if suffix not in SUPPORTED_SUFFIXES:
+            continue
         try:
-            if file.suffix == '.pdf':
+            if suffix == '.pdf':
                 # 转成字符串传给加载器
                 docs.extend(PyPDFLoader(str(file)).load())
                 print(f"✅ 加载 PDF: {file.name}")
-            elif file.suffix in ('.txt', '.md'):
+            elif suffix in ('.txt', '.md', '.markdown'):
                 docs.extend(TextLoader(str(file), encoding="utf-8").load())
                 print(f"✅ 加载文本: {file.name}")
-            elif file.suffix == ".docx":
+            elif suffix == ".docx":
                 docs.extend(Docx2txtLoader(str(file)).load())
+                print(f"✅ 加载 Word: {file.name}")
         except Exception as e:
             print(f"❌ 加载失败 {file.name}: {e}")
     return docs

@@ -1,4 +1,6 @@
+import ast
 import gc
+import operator
 import shutil
 import time
 
@@ -11,7 +13,7 @@ from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
 
 from src.cache import make_key, get_cached, set_cached
-from src.config import TOP_K, CHROMA_DIR, DB_URL
+from src.config import TOP_K, CHROMA_DIR, DB_URL, RERANK_CANDIDATES
 from src.index_meta import (
     clear_manifest,
     current_params,
@@ -51,8 +53,12 @@ def _clear_shared_system_cache() -> bool:
     但 System 仍被那张类级字典引用着，句柄继续开着，rmtree 报 WinError 32。
 
     clear_system_cache() 把 _identifier_to_system / _identifier_to_refcount
-    两张表整个丢弃（= {}）。注意它不调用 system.stop()，是靠丢弃引用让
-    System 被回收、在析构时释放句柄 —— 所以后面还要 gc.collect() 推一把。
+    两张表整个丢弃（= {}）。它**不**调用 system.stop()，只是丢掉 Python 引用。
+
+    注意：仅靠它不足以释放句柄。HNSW 的 .bin 是内存映射，由 Rust 层持有，
+    Python 的 GC 回收不到那里 —— 实测「只清缓存」时 rmtree 依然对
+    data_level0.bin 报 WinError 32。真正拆掉映射的是 client.close()
+    走的 _release_system() → system.stop()。所以本函数只作兜底。
     """
     try:
         from chromadb.api.shared_system_client import SharedSystemClient
@@ -67,34 +73,38 @@ def _clear_shared_system_cache() -> bool:
 def release_all_vectorstores() -> int:
     """释放向量库句柄，返回显式 close 掉的客户端个数。
 
-    两条路一起走，因为它们的覆盖面不同：
+    两条路都要走，因为它们的作用**不同**，实测缺一不可：
 
-    1. client.close()（逐个）—— 走 chromadb 的正常释放路径
-       （_release_system：引用计数递减，归零时 system.stop()）。
-       但它只覆盖我们登记过的对象。
+    1. client.close() —— 走 chromadb 的正常释放路径 _release_system()，
+       引用计数归零时调用 system.stop()，真正拆掉 Rust 层的 HNSW 内存映射。
+       **这一步不能省**：clear_system_cache() 只是把 Python 引用丢掉，
+       而内存映射由 C/Rust 层持有，Python 的 GC 回收不了它 ——
+       实测只清缓存会在 rmtree 时对 data_level0.bin 报 WinError 32。
 
-    2. clear_system_cache()（兜底）—— 不管有没有登记，把整个进程的
-       System 缓存清空。防的是"某条代码路径直接 Chroma(...) 建实例、
-       没经过 build_retriever，因而没被登记"的情况。
+    2. clear_system_cache() —— 兜底清空整张进程级缓存，
+       覆盖"没被登记过的" System（例如别的代码路径直接 Chroma(...) 建的）。
 
-    多释放几次无害，所以不追求精确计数，只求"重建前一定放开文件"。
+    技术债说明：第①步用 getattr(vs, "_client") 访问 langchain_chroma 的
+    私有字段。之所以接受这个债：它是唯一能触发 system.stop() 的出口，
+    而 stop() 是释放内存映射的必要条件。用 hasattr 探测，库改名时不至于崩，
+    会退化成只走第②步（那时第②步的不足会暴露出来，但至少有日志可查）。
+
+    幂等，多调几次无害 —— 资源清理宁可多做一次，不能漏。
     """
     global _active_vectorstores
 
-    # ① 逐个显式关闭（正常释放路径）
     released = 0
     for vs in _active_vectorstores:
         client = getattr(vs, "_client", None)
         if client is None:
             continue
         try:
-            client.close()
+            client.close()          # → _release_system() → system.stop()
             released += 1
         except Exception as e:
             print(f"⚠️ 关闭向量库客户端失败（{type(e).__name__}: {e}）")
     _active_vectorstores = []
 
-    # ② 兜底清空进程级缓存（覆盖未登记的对象）
     _clear_shared_system_cache()
 
     return released
@@ -104,8 +114,8 @@ def remove_chroma_dir(retries: int = 10, delay: float = 0.3) -> None:
     """可靠地删除向量库目录。
 
     三层保险：
-    1. 先释放句柄（release_all_vectorstores：逐个 close + 清 chromadb 的
-       进程级 System 缓存），再 gc 一轮，让底层映射文件真正关闭；
+    1. 先释放句柄（release_all_vectorstores → 清 chromadb 的进程级
+       System 缓存），再 gc 一轮，让底层映射文件真正关闭；
     2. Windows 上句柄释放往往不是瞬时的，所以带退避重试，
        而不是一次失败就抛出去。
 
@@ -192,6 +202,81 @@ def build_retriever(force: bool = False):
     return retriever
 
 
+# ========== 安全算术求值 ==========
+# 原来 calculator 工具用 eval(expression)。LLM 会被提示注入影响，
+# 而 eval 能执行任意表达式（`__import__('os').system(...)`），
+# 等于把 RCE 交给模型。这里改成 ast 白名单求值：
+# 只允许数字与 + - * / // % ** 括号，用 operator 模块绑定运算，
+# 完全不经过 eval，所以不存在绕过。
+#
+# 保留原始实现供对照：
+#     return str(eval(expression))
+
+_BIN_OPS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.FloorDiv: operator.floordiv,
+    ast.Mod: operator.mod,
+    ast.Pow: operator.pow,
+}
+_UNARY_OPS = {
+    ast.UAdd: operator.pos,
+    ast.USub: operator.neg,
+}
+# ast 节点白名单：表达式本身 + 三种字面量/节点 + 运算符节点
+_ALLOWED_NODES = (
+    ast.Expression, ast.BinOp, ast.UnaryOp, ast.Constant, ast.Load,
+) + tuple(_BIN_OPS) + tuple(_UNARY_OPS)
+
+# 指数上限：防止 `9**9**9` 这种把 CPU 挂死的表达式
+_MAX_POW = 1000
+
+
+def safe_eval_arithmetic(expression: str) -> float:
+    """只计算纯算术表达式。任何函数调用、名字、属性访问都会抛 ValueError。"""
+    try:
+        tree = ast.parse(expression, mode="eval")
+    except SyntaxError as e:
+        raise ValueError(f"表达式语法错误: {e.msg}") from e
+
+    for node in ast.walk(tree):
+        if not isinstance(node, _ALLOWED_NODES):
+            raise ValueError(
+                f"表达式里不允许出现 {type(node).__name__}，只支持数字和 + - * / // % **"
+            )
+        # 只接受真正的 int / float。
+        # 注意 isinstance(True, int) 是 True（bool 是 int 的子类），
+        # 所以必须显式排除 bool，否则 "True" 会被当成数字放行。
+        # 同时 complex 也不接受（ast.parse("1j") 会产出 complex 常量）。
+        if isinstance(node, ast.Constant) and (
+            isinstance(node.value, bool)
+            or not isinstance(node.value, (int, float))
+        ):
+            raise ValueError(f"只允许数字，收到: {node.value!r}")
+
+    def _eval(node):
+        if isinstance(node, ast.Expression):
+            return _eval(node.body)
+        if isinstance(node, ast.Constant):
+            return node.value
+        if isinstance(node, ast.BinOp):
+            op = _BIN_OPS[type(node.op)]
+            left, right = _eval(node.left), _eval(node.right)
+            if isinstance(node.op, ast.Pow) and (
+                abs(right) > _MAX_POW or abs(left) > _MAX_POW
+            ):
+                raise ValueError(f"指数过大（上限 {_MAX_POW}）")
+            return op(left, right)
+        if isinstance(node, ast.UnaryOp):
+            return _UNARY_OPS[type(node.op)](_eval(node.operand))
+
+        raise ValueError(f"无法计算的节点: {type(node).__name__}")
+
+    return _eval(tree)
+
+
 async def build_agent(retriever, pool):
     """用给定的 retriever 和 pool 创建 Agent"""
     reranker = get_reranker()
@@ -209,7 +294,7 @@ async def build_agent(retriever, pool):
             print(f"✅ 命中缓存: {query[:30]}")
             return cached
         # 没命中，走完整检索
-        docs = retriever.invoke(query)[:10]
+        docs = retriever.invoke(query)[:RERANK_CANDIDATES]
         if not docs:
             return "没有找到相关内容。"
 
@@ -221,8 +306,10 @@ async def build_agent(retriever, pool):
         ranked = sorted(zip(docs, scores), key=lambda x: x[1], reverse=True)
         top_docs = [d for d, _ in ranked[:TOP_K]]
 
+        # 来源只取文件名。metadata['source'] 是绝对路径，直接塞进上下文会
+        # 把本机目录结构（用户名、盘符）喂给模型，还可能被它复述出来。
         result = "\n\n".join(
-            f"[来源: {d.metadata.get('source', '未知')}]\n{d.page_content}"
+            f"[来源: {Path(d.metadata.get('source', '未知')).name}]\n{d.page_content}"
             for d in top_docs
         )
 
@@ -237,7 +324,7 @@ async def build_agent(retriever, pool):
     def calculator(expression: str) -> str:
         """计算数学表达式，例如 '(25 + 17) * 3'"""
         try:
-            return str(eval(expression))
+            return str(safe_eval_arithmetic(expression))
         except Exception as e:
             return f"计算失败: {e}"
 

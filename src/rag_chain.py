@@ -3,7 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
-from src.config import TOP_K
+from src.config import TOP_K, RETRIEVAL_K, ENSEMBLE_WEIGHTS
 from src.model import get_model, get_reranker
 from langchain_community.retrievers import BM25Retriever
 import re
@@ -73,14 +73,14 @@ def preprocess(text: str) -> list[str]:
 
 def build_hybrid_retriever(vectorstore, all_chunks):
     # 向量检索：负责语义理解
-    vector_retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+    vector_retriever = vectorstore.as_retriever(search_kwargs={"k": RETRIEVAL_K})
 
     # BM25：负责精确关键词匹配
     bm25_retriever = BM25Retriever.from_documents(all_chunks, preprocess_func=preprocess)
-    bm25_retriever.k = 5
+    bm25_retriever.k = RETRIEVAL_K
 
     # 组合
     return EnsembleRetriever(
         retrievers=[bm25_retriever, vector_retriever],
-        weights=[0.8, 0.2],
+        weights=ENSEMBLE_WEIGHTS,
     )
