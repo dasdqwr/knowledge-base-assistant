@@ -1,0 +1,68 @@
+{
+  "params": {
+    "chunk_size": 800,
+    "chunk_overlap": 100,
+    "doc_count": 2,
+    "chunk_count": 277,
+    "files": [
+      {
+        "name": "langchain.md",
+        "size": 76045,
+        "sha256": "b4977d9a7e5bb3d8"
+      },
+      {
+        "name": "python.md",
+        "size": 46807,
+        "sha256": "c185b857a2cd8dc8"
+      }
+    ]
+  },
+  "summary": {
+    "doc_count": 2,
+    "chunk_count": 277,
+    "chunks_per_doc": {
+      "langchain.md": 158,
+      "python.md": 119
+    },
+    "size_min": 40,
+    "size_median": 280,
+    "size_p90": 661,
+    "size_max": 1412,
+    "size_mean": 328.1,
+    "tiny_chunks": 2,
+    "oversize_chunks": 5,
+    "broken_fence_chunks": 0,
+    "broken_fence_ratio": 0.0,
+    "code_char_ratio": 0.4613,
+    "exact_dup_groups": 1,
+    "exact_dup_chunks": 2,
+    "near_dup_pairs": 0,
+    "header_coverage": {
+      "h1": 158,
+      "h2": 277,
+      "h3": 216
+    }
+  },
+  "broken_fence_detail": [],
+  "tiny_detail": [
+    {
+      "index": 98,
+      "length": 48,
+      "source": "langchain.md",
+      "preview": "### 7.4 主程序 - 演示查询与交互模式，支持 `quit` 退出、`reset` 重置。"
+    },
+    {
+      "index": 161,
+      "length": 40,
+      "source": "python.md",
+      "preview": "```python x: int x = 10 ``` **函数参数与返回值**"
+    }
+  ],
+  "exact_dup_groups": [
+    [
+      2,
+      26
+    ]
+  ],
+  "near_dup_pairs": []
+}

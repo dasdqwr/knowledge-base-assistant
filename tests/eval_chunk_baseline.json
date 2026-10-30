@@ -1,0 +1,386 @@
+{
+  "params": {
+    "chunk_size": 800,
+    "chunk_overlap": 100,
+    "doc_count": 2,
+    "chunk_count": 227,
+    "files": [
+      {
+        "name": "langchain.md",
+        "size": 76045,
+        "sha256": "b4977d9a7e5bb3d8"
+      },
+      {
+        "name": "python.md",
+        "size": 46807,
+        "sha256": "c185b857a2cd8dc8"
+      }
+    ]
+  },
+  "summary": {
+    "doc_count": 2,
+    "chunk_count": 227,
+    "chunks_per_doc": {
+      "langchain.md": 144,
+      "python.md": 83
+    },
+    "size_min": 10,
+    "size_median": 351,
+    "size_p90": 741,
+    "size_max": 800,
+    "size_mean": 391.4,
+    "tiny_chunks": 1,
+    "oversize_chunks": 0,
+    "broken_fence_chunks": 41,
+    "broken_fence_ratio": 0.1806,
+    "code_char_ratio": 0.3807,
+    "exact_dup_groups": 0,
+    "exact_dup_chunks": 0,
+    "near_dup_pairs": 0,
+    "header_coverage": {
+      "h1": 144,
+      "h2": 227,
+      "h3": 170
+    }
+  },
+  "broken_fence_detail": [
+    {
+      "index": 50,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 368,
+      "first_line": "### 3.3 参数 Schema 定义  "
+    },
+    {
+      "index": 51,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 3,
+      "length": 592,
+      "first_line": "@tool(args_schema=WeatherInput)"
+    },
+    {
+      "index": 55,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 663,
+      "first_line": "## 7. 关键代码模板  "
+    },
+    {
+      "index": 56,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 323,
+      "first_line": "for tool_call in response.tool_calls:"
+    },
+    {
+      "index": 60,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 9,
+      "length": 586,
+      "first_line": "### 3.2 高级特性  "
+    },
+    {
+      "index": 61,
+      "source": "langchain.md",
+      "kind": "缺开启围栏",
+      "fence_count": 3,
+      "length": 238,
+      "first_line": "class Company(BaseModel):"
+    },
+    {
+      "index": 82,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 318,
+      "first_line": "| `None`             | 默认，自然语言输出                             |  "
+    },
+    {
+      "index": 83,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 296,
+      "first_line": "agent = create_agent("
+    },
+    {
+      "index": 87,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 576,
+      "first_line": "### 7.3 创建 Agent  "
+    },
+    {
+      "index": 88,
+      "source": "langchain.md",
+      "kind": "缺开启围栏",
+      "fence_count": 1,
+      "length": 348,
+      "first_line": "def chat(self, user_input: str) -> str:"
+    },
+    {
+      "index": 103,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 3,
+      "length": 798,
+      "first_line": "### 6.2 Node-style 用法  "
+    },
+    {
+      "index": 104,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 156,
+      "first_line": "agent = create_agent(model=model, middleware=[MyMiddleware()])"
+    },
+    {
+      "index": 114,
+      "source": "langchain.md",
+      "kind": "缺开启围栏",
+      "fence_count": 3,
+      "length": 791,
+      "first_line": "### 4.4 记忆治理策略  "
+    },
+    {
+      "index": 116,
+      "source": "langchain.md",
+      "kind": "缺开启围栏",
+      "fence_count": 1,
+      "length": 225,
+      "first_line": "agent = create_agent("
+    },
+    {
+      "index": 122,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 351,
+      "first_line": "## 6. 静态运行时上下文  "
+    },
+    {
+      "index": 124,
+      "source": "langchain.md",
+      "kind": "缺开启围栏",
+      "fence_count": 1,
+      "length": 112,
+      "first_line": "agent = create_agent(model=model, middleware=[personalized_prompt], store=store,"
+    },
+    {
+      "index": 131,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 3,
+      "length": 409,
+      "first_line": "### 3.3 常用切分器  "
+    },
+    {
+      "index": 134,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 592,
+      "first_line": "splitter = SemanticChunker("
+    },
+    {
+      "index": 140,
+      "source": "langchain.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 642,
+      "first_line": "## 6. 完整 RAG 实战案例  "
+    },
+    {
+      "index": 141,
+      "source": "langchain.md",
+      "kind": "缺开启围栏",
+      "fence_count": 1,
+      "length": 656,
+      "first_line": "# 5. 检索"
+    },
+    {
+      "index": 147,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 5,
+      "length": 614,
+      "first_line": "### 1.3 常用类型  "
+    },
+    {
+      "index": 149,
+      "source": "python.md",
+      "kind": "缺开启围栏",
+      "fence_count": 5,
+      "length": 562,
+      "first_line": "T = TypeVar(\"T\")"
+    },
+    {
+      "index": 156,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 3,
+      "length": 793,
+      "first_line": "### 2.2 基础：用 `BaseModel` 定义模型  "
+    },
+    {
+      "index": 157,
+      "source": "python.md",
+      "kind": "缺开启围栏",
+      "fence_count": 1,
+      "length": 116,
+      "first_line": "event = Event(name=\"PyCon\", attendees=\"500\", event_date=\"2025-05-15\")"
+    },
+    {
+      "index": 158,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 113,
+      "first_line": "### 2.3 字段约束：`Field()`  "
+    },
+    {
+      "index": 159,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 709,
+      "first_line": "class Product(BaseModel):"
+    },
+    {
+      "index": 161,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 298,
+      "first_line": "| `alias` / `validation_alias` / `serialization_alias` | 任意            | 别名     "
+    },
+    {
+      "index": 162,
+      "source": "python.md",
+      "kind": "缺开启围栏",
+      "fence_count": 3,
+      "length": 396,
+      "first_line": "class Config(BaseModel):"
+    },
+    {
+      "index": 163,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 3,
+      "length": 764,
+      "first_line": "### 2.4 验证器：`field_validator` 和 `model_validator`  "
+    },
+    {
+      "index": 164,
+      "source": "python.md",
+      "kind": "缺开启围栏",
+      "fence_count": 1,
+      "length": 193,
+      "first_line": "class Booking(BaseModel):"
+    },
+    {
+      "index": 165,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 125,
+      "first_line": "### 2.5 模型配置：`ConfigDict`  "
+    },
+    {
+      "index": 166,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 778,
+      "first_line": "class User(BaseModel):"
+    },
+    {
+      "index": 170,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 787,
+      "first_line": "### 2.8 序列化：`model_dump()` 和 `model_dump_json()`  "
+    },
+    {
+      "index": 171,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 1,
+      "length": 430,
+      "first_line": "# 排除未设置的字段"
+    },
+    {
+      "index": 175,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 3,
+      "length": 776,
+      "first_line": "### 2.12 与 LangChain 集成：结构化输出  "
+    },
+    {
+      "index": 176,
+      "source": "python.md",
+      "kind": "缺开启围栏",
+      "fence_count": 3,
+      "length": 579,
+      "first_line": "agent = create_agent("
+    },
+    {
+      "index": 212,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 3,
+      "length": 404,
+      "first_line": "### 8.2 核心概念  "
+    },
+    {
+      "index": 213,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 3,
+      "length": 796,
+      "first_line": "asyncio.run(main())   # asyncio.run 创建并管理事件循环"
+    },
+    {
+      "index": 215,
+      "source": "python.md",
+      "kind": "围栏在块中间",
+      "fence_count": 7,
+      "length": 762,
+      "first_line": "### 8.3 `asyncio` 常用函数  "
+    },
+    {
+      "index": 216,
+      "source": "python.md",
+      "kind": "缺开启围栏",
+      "fence_count": 7,
+      "length": 741,
+      "first_line": "for coro in asyncio.as_completed(tasks):"
+    },
+    {
+      "index": 225,
+      "source": "python.md",
+      "kind": "缺开启围栏",
+      "fence_count": 3,
+      "length": 189,
+      "first_line": "future.thenAccept(result -> System.out.println(result));"
+    }
+  ],
+  "tiny_detail": [
+    {
+      "index": 91,
+      "length": 10,
+      "source": "langchain.md",
+      "preview": "## 第七章：中间件"
+    }
+  ],
+  "exact_dup_groups": [],
+  "near_dup_pairs": []
+}

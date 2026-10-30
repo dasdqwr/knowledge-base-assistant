@@ -1,9 +1,23 @@
 from pathlib import Path
 
-from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter, Language
+# 注意：src.config 必须在任何 huggingface / torch 相关导入之前。
+# config 会 load_dotenv()，而 HF_HOME / HF_ENDPOINT 这类变量只有在下游库
+# 首次 import 之前生效 —— huggingface_hub 在导入时就把缓存路径算成常量了，
+# 之后再设置 os.environ 不会改变它，模型会照样下到旧位置（C 盘）。
+from src.config import (
+    CHUNK_OVERLAP,
+    CHUNK_SIZE,
+    DATA_DIR,
+    FLUSH_AFTER_CODE,
+    MAX_CODE_BLOCKS_PER_CHUNK,
+    SUPPORTED_SUFFIXES,
+)
 
-from src.config import DATA_DIR, CHUNK_SIZE, CHUNK_OVERLAP, SUPPORTED_SUFFIXES
+from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
+from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
+
+from src.md_chunker import chunk_markdown
 
 
 def load_documents():
@@ -45,31 +59,29 @@ def _get_recursive_splitter():
     )
 
 
-def _get_markdown_splitter():
-    """Markdown 标题切分器"""
-    return MarkdownHeaderTextSplitter(
-        headers_to_split_on=[
-            ("#", "h1"),
-            ("##", "h2"),
-            ("###", "h3"),
-        ],
-        strip_headers=False,   # 保留标题在内容里
+def _split_markdown(doc, fallback_splitter=None):
+    """Markdown 专用切分：代码块原子化，保证围栏永不被切断。
+
+    实现在 src/md_chunker.py。要点：
+      · 围栏代码块整体不可切，加入后立即封口（每块最多 N 个代码块）
+      · 只有正文段落才会交给递归切分器，而正文里没有围栏，所以安全
+      · 未闭合围栏按代码整段保留，不丢内容
+
+    fallback_splitter 参数保留以兼容旧调用方，实际由 chunk_markdown 内部
+    用同样的分隔符构造正文切分器。
+    """
+    pieces = chunk_markdown(
+        doc.page_content,
+        chunk_size=CHUNK_SIZE,
+        overlap=CHUNK_OVERLAP,
+        max_code_blocks_per_chunk=MAX_CODE_BLOCKS_PER_CHUNK,
+        flush_after_code=FLUSH_AFTER_CODE,
+        prose_splitter=fallback_splitter or _get_recursive_splitter(),
     )
-
-def _split_markdown(doc, fallback_splitter):
-    """Markdown 专用切分：先按标题切，再对过大的块递归切"""
-    md_splitter = _get_markdown_splitter()
-    md_chunks = md_splitter.split_text(doc.page_content)
-
-    result = []
-    for chunk in md_chunks:
-        chunk.metadata.update(doc.metadata)   # 保留 source
-        #Markdown 按标题切完后，某节可能还是太长，这时用递归切分器再切
-        if len(chunk.page_content) > CHUNK_SIZE:
-            result.extend(fallback_splitter.split_documents([chunk]))
-        else:
-            result.append(chunk)
-    return result
+    return [
+        Document(page_content=text, metadata={**doc.metadata, **meta})
+        for text, meta in pieces
+    ]
 
 
 def _split_code(doc, language):

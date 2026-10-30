@@ -1,12 +1,9 @@
 from functools import lru_cache
 from langchain.chat_models import init_chat_model
 from src.config import (
-    EMBEDDING_MODEL,
     MODEL_NAME,
     DEEPSEEK_API_KEY,
     DEEPSEEK_BASE_URL,
-    SILICONFLOW_BASE_URL,
-    SILICONFLOW_API_KEY,
 )
 
 
@@ -19,12 +16,14 @@ def get_model():
 
 @lru_cache(maxsize=1)
 def get_embeddings():
-    from langchain_openai import OpenAIEmbeddings
-    return OpenAIEmbeddings(
-        model=EMBEDDING_MODEL,
-        api_key=SILICONFLOW_API_KEY,
-        base_url=SILICONFLOW_BASE_URL,
-    )
+    """嵌入对象（按 EMBEDDING_BACKEND 选择 api / local，并套上错误翻译）。
+
+    实现在 src/embeddings.py。加 @lru_cache 是因为本地模型加载很贵
+    （bge-m3 约 2 GB），必须整个进程只加载一次。
+    """
+    from src.embeddings import build_embeddings
+
+    return build_embeddings()
 
 class LazyReranker:
     """延迟加载的 Reranker，第一次调用 predict 时才加载模型"""

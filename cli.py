@@ -266,8 +266,11 @@ def evaluate():
 @app.command()
 def info():
     """显示项目配置信息"""
+    import os
+
     from src.config import (
-        CHROMA_DIR, DB_URL, REDIS_HOST, REDIS_PORT, TOP_K,
+        CHROMA_DIR, DB_URL, EMBEDDING_BACKEND, EMBEDDING_MODEL,
+        LOCAL_EMBEDDING_DEVICE, REDIS_HOST, REDIS_PORT, TOP_K,
     )
 
     typer.echo("📋 项目配置")
@@ -285,6 +288,15 @@ def info():
 
     typer.echo(f"Redis:        {REDIS_HOST}:{REDIS_PORT}")
     typer.echo(f"TOP_K:        {TOP_K}")
+
+    # 嵌入后端：切换后端/模型都会让索引失效，所以要把实际生效值显示出来
+    backend = (EMBEDDING_BACKEND or "api").strip().lower()
+    typer.echo(f"嵌入后端:     {backend}（模型 {EMBEDDING_MODEL}）")
+    if backend == "local":
+        typer.echo(f"  设备:       {LOCAL_EMBEDDING_DEVICE}")
+        typer.echo(f"  模型缓存:   {os.environ.get('HF_HOME', '(默认 ~/.cache/huggingface)')}")
+    else:
+        typer.echo(f"  端点:       {os.environ.get('SILICONFLOW_BASE_URL', '(未设置)')}")
     typer.echo("=" * 60)
 
     # 列出文档

@@ -50,6 +50,16 @@ def _sha256(path: Path, chunk_size: int = 1 << 20) -> str:
     return h.hexdigest()
 
 
+# 决定"块内容"的源文件。任何一个变了，索引都必须重建。
+# 加新文件时记得同步这里 —— 曾经漏掉 md_chunker.py，导致改切分逻辑后
+# 索引不会自动重建（清单以为还新鲜），检索到的还是旧块。
+CHUNKING_SOURCES = (
+    "src/loader.py",
+    "src/md_chunker.py",
+    "src/vectorstore.py",
+)
+
+
 def _code_version() -> str:
     """取切分/索引相关代码的 git 版本号。
 
@@ -59,7 +69,7 @@ def _code_version() -> str:
     """
     try:
         out = subprocess.run(
-            ["git", "hash-object", "src/loader.py", "src/vectorstore.py"],
+            ["git", "hash-object", *CHUNKING_SOURCES],
             capture_output=True,
             text=True,
             timeout=10,
@@ -106,12 +116,15 @@ def file_stats(files=None) -> dict:
 
 def current_params() -> dict:
     """所有决定索引内容的参数。任何一项变化都必须重建。"""
-    from src.config import CHUNK_OVERLAP, CHUNK_SIZE, EMBEDDING_MODEL
+    from src.config import CHUNK_OVERLAP, CHUNK_SIZE, EMBEDDING_BACKEND, EMBEDDING_MODEL
 
     return {
         "chunk_size": CHUNK_SIZE,
         "chunk_overlap": CHUNK_OVERLAP,
         "embedding_model": EMBEDDING_MODEL,
+        # 后端也算：就算模型同名，本地推理和 API 的向量也存在细微差异，
+        # 混用会让相似度不可比。切换后端必须重建。
+        "embedding_backend": (EMBEDDING_BACKEND or "api").strip().lower(),
         "code_version": _code_version(),
         "schema_version": SCHEMA_VERSION,
     }

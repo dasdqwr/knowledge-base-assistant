@@ -24,7 +24,17 @@ DB_URL=os.getenv("DB_URL")
 
 # 嵌入模型名。放在这里是为了让"实际用的模型"和"索引签名里记的模型"共用同一个真相，
 # 避免改了 model.py 却忘了改索引新鲜度判断，从而静默复用错误的向量库。
-EMBEDDING_MODEL = "BAAI/bge-m3"
+# 可用 EMBEDDING_MODEL 环境变量覆盖，便于在不改代码的情况下换本地模型。
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
+
+# 嵌入后端：
+#   "api"   —— 走 OpenAI 兼容端点（SiliconFlow 等），按量计费、需要网络
+#   "local" —— 本地 sentence-transformers，零成本、离线、无限流；首次需下载模型
+# 切换后端会让已有向量库失效（不同实现的向量有细微差异），
+# 这个值已纳入索引签名，改后会自动重建。
+EMBEDDING_BACKEND = os.getenv("EMBEDDING_BACKEND", "api")
+# 本地嵌入使用的设备："cpu" / "cuda" / "mps"
+LOCAL_EMBEDDING_DEVICE = os.getenv("LOCAL_EMBEDDING_DEVICE", "cpu")
 
 #__file__ 是这个文件本身的路径
 # config.py 在 src/ 下，parent.parent 就是项目根目录
@@ -52,3 +62,14 @@ RETRIEVAL_K = 5
 ENSEMBLE_WEIGHTS = [0.8, 0.2]
 # 进入 Rerank 的候选数量
 RERANK_CANDIDATES = 10
+
+# ========== Markdown 切分 ==========
+# 每块最多包含几个代码围栏块。
+# 设为 1 表示代码块互不混装（检索更精确，块数更多）；
+# 调大可以让块更"满"、减少嵌入调用。改这个值后需要重建索引。
+MAX_CODE_BLOCKS_PER_CHUNK = 1
+# 代码块之后是否立即封口。
+# False（推荐）：允许紧跟的正文（通常是解释这段代码的要点）并入同一块。
+#   实测 277 块 / 2 个过小碎片；True 则是 310 块 / 11 个碎片。
+# True：块更纯，但容易把代码下方的一两行说明挤成独立碎片块。
+FLUSH_AFTER_CODE = False
