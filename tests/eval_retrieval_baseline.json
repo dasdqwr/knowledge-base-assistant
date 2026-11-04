@@ -1,0 +1,58 @@
+{
+  "params": {
+    "chunk_size": 800,
+    "embedding_model": "BAAI/bge-small-zh-v1.5",
+    "embedding_backend": "local",
+    "retrieval_k": 5,
+    "rerank_candidates": 10,
+    "top_k": 8,
+    "n_dataset": 38
+  },
+  "results": [
+    {
+      "config": "A 纯向量",
+      "n": 38,
+      "recall@5": 0.7895,
+      "recall@10": 0.8684,
+      "hit@1": 0.6316,
+      "mrr": 0.7005,
+      "avg_candidates": 10.0,
+      "avg_latency_s": 0.0208,
+      "missed_ids": [
+        "r006",
+        "r009",
+        "r011",
+        "r016",
+        "r028"
+      ]
+    },
+    {
+      "config": "B 混合",
+      "n": 38,
+      "recall@5": 0.8947,
+      "recall@10": 0.9474,
+      "hit@1": 0.7105,
+      "mrr": 0.7801,
+      "avg_candidates": 8.21,
+      "avg_latency_s": 0.0096,
+      "missed_ids": [
+        "r009",
+        "r022"
+      ]
+    },
+    {
+      "config": "C 混合+Rerank",
+      "n": 38,
+      "recall@5": 0.9211,
+      "recall@10": 0.9474,
+      "hit@1": 0.8421,
+      "mrr": 0.8781,
+      "avg_candidates": 8.21,
+      "avg_latency_s": 4.5008,
+      "missed_ids": [
+        "r009",
+        "r022"
+      ]
+    }
+  ]
+}

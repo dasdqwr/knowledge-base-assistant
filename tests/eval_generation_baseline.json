@@ -1,0 +1,622 @@
+{
+  "params": {
+    "chunk_size": 800,
+    "embedding_model": "BAAI/bge-small-zh-v1.5",
+    "embedding_backend": "local",
+    "top_k": 8,
+    "rerank_candidates": 10,
+    "n_dataset": 38
+  },
+  "summary": {
+    "n": 38,
+    "faithfulness_mean": 0.8013,
+    "faithfulness_n": 38,
+    "faith_parse_errors": 0,
+    "relevance_mean": 4.8684,
+    "relevance_n": 38,
+    "relevance_parse_errors": 0,
+    "refusal_rate": 0.0263,
+    "avg_answer_chars": 465.8,
+    "elapsed_s": 948.8
+  },
+  "rows": [
+    {
+      "id": "r001",
+      "question": "LangChain 的 Model I/O 流程包含哪三个步骤？",
+      "answer_chars": 138,
+      "answer_latency_s": 1.12,
+      "refusal": false,
+      "faith_total": 4,
+      "faith_supported": 1,
+      "faith_unsupported": [
+        "Format（PromptTemplate）：格式化提示词",
+        "Predict（Model）：调用模型进行预测",
+        "Parse（OutputParser）：解析模型输出"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接列出了 LangChain Model I/O 流程的三个步骤：Format（PromptTemplate）、Predict（Model）、Parse（OutputParser），与问题完全对应，信息完整且简洁。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r002",
+      "question": "Python 类型注解有哪些作用，运行时是否会强制检查类型？",
+      "answer_chars": 821,
+      "answer_latency_s": 2.22,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 5,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接回答了类型注解的作用，并明确说明运行时不会强制检查类型，还解释了静态检查工具与解释器行为的区别。虽然额外包含对比和最佳实践，但不影响切题性，核心信息完整。",
+      "n_context_docs": 6
+    },
+    {
+      "id": "r003",
+      "question": "为什么 Dog 类没有继承 Speaker，也能作为参数传给 make_speak？",
+      "answer_chars": 348,
+      "answer_latency_s": 2.4,
+      "refusal": false,
+      "faith_total": 6,
+      "faith_supported": 5,
+      "faith_unsupported": [
+        "这里用的是 Python 的结构化子类型"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接且完整地解释了原因：Speaker 是 typing.Protocol，采用结构化子类型/鸭子类型，不要求显式继承；只要 Dog 实现了 speak()，运行时 make_speak 调用 s.speak() 即可正常工作。",
+      "n_context_docs": 7
+    },
+    {
+      "id": "r004",
+      "question": "在 Pydantic 模型中，list 类型字段怎样设置默认值才能避免所有实例共享同一个列表？",
+      "answer_chars": 444,
+      "answer_latency_s": 2.1,
+      "refusal": false,
+      "faith_total": 6,
+      "faith_supported": 3,
+      "faith_unsupported": [
+        "`= []` 这种可变默认值在模型定义时只创建一次",
+        "`default_factory` 每次创建实例时都会调用它生成新的列表",
+        "这与 Python 函数默认参数陷阱是同一类问题"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接、完整地回答了问题：明确给出应使用 Field(default_factory=list)，并说明了不能直接写 = [] 的原因，还提供了 Pydantic 代码示例和可变默认值共享机制的解释。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r005",
+      "question": "在 LangChain 的模型调用方法中，batch() 有什么特点，适合什么场景？",
+      "answer_chars": 101,
+      "answer_latency_s": 1.02,
+      "refusal": false,
+      "faith_total": 2,
+      "faith_supported": 2,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接点明了 batch() 的两个核心要点：特点是批量并行处理多个输入，适用场景是高并发，内容简洁且切题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r006",
+      "question": "LangSmith 里哪个功能用于人工标注和纠正回答？",
+      "answer_chars": 44,
+      "answer_latency_s": 1.04,
+      "refusal": false,
+      "faith_total": 1,
+      "faith_supported": 1,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接指出 LangSmith 中用于人工标注和纠正回答的功能是 Annotation Queues（标注队列），并补充了打标签等用途，完整且切题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r007",
+      "question": "在 LangSmith 中如何创建 API Key，生成后需要注意什么？",
+      "answer_chars": 281,
+      "answer_latency_s": 1.82,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 5,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接给出了在 LangSmith 中创建 API Key 的完整步骤，并明确说明生成后 API Key 只显示一次、必须立即复制保存，还补充了配置到 .env 的示例，完整回答了问题。",
+      "n_context_docs": 7
+    },
+    {
+      "id": "r008",
+      "question": "模型调用时，用字典列表传入 system 和 user 消息的推荐写法是什么？",
+      "answer_chars": 406,
+      "answer_latency_s": 1.97,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 5,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接给出了推荐的字典列表写法，明确展示了 system 和 user 消息的 role/content 结构，并解释了每个字典元素的含义，完整回答了问题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r009",
+      "question": "在 Python 类型注解里，如何声明一个字符串列表和一个键为字符串、值为整数的字典？",
+      "answer_chars": 565,
+      "answer_latency_s": 2.35,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 4,
+      "faith_unsupported": [
+        "如果是 Python 3.8 及更早版本，需要使用 typing 中的写法"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接、完整地说明了字符串列表和字符串到整数字典的类型注解写法，涵盖 Python 3.9+ 的 list[str]、dict[str, int]，并补充了旧版本 typing.List、typing.Dict 的写法，因此完全切题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r010",
+      "question": "Pydantic 的 Event 模型如何把传入的字符串 \"500\" 和 \"2025-05-15\" 转换为字段类型？",
+      "answer_chars": 569,
+      "answer_latency_s": 2.93,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 4,
+      "faith_unsupported": [
+        "`name=\"PyCon\"`：本来已是字符串，保持不变。"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接且完整地解释了 Pydantic 如何根据字段类型注解进行自动校验和类型转换，并分别说明了字符串 \"500\" 转 int、\"2025-05-15\" 转 date 的过程，附带示例代码与结果，完全切题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r011",
+      "question": "LangSmith 的 Evaluators 功能支持什么打分方式，适合在哪个阶段使用？",
+      "answer_chars": 94,
+      "answer_latency_s": 1.13,
+      "refusal": false,
+      "faith_total": 3,
+      "faith_supported": 3,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 4,
+      "relevance_reason": "答案明确列出了两种打分方式（规则打分、LLM-as-a-judge 自动打分），并指出适合在量化评估阶段使用，基本回答了问题；但“量化评估阶段”表述较笼统，缺少更具体的阶段说明（如离线实验/评估或线上监控），细节略不足。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r012",
+      "question": "在 Pydantic 中用 Field() 如何限制 price 字段必须大于 0 且不超过 999999.99？",
+      "answer_chars": 790,
+      "answer_latency_s": 3.87,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 2,
+      "faith_unsupported": [
+        "`gt` 表示大于且不包含 0，`le` 表示小于等于且包含 999999.99；需要大于等于 0 时应换成 `ge=0`，需要严格小于上限时应把 `le` 换成 `lt`。",
+        "若数据安全至关重要，请在业务代码中再做一次显式校验。",
+        "`999_999.99` 与 `999999.99` 等价，数值下划线仅提升可读性。"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接给出了 Pydantic 中使用 Field() 限制 price 字段的代码，正确使用 gt=0 表示大于 0，le=999_999.99 表示不超过 999999.99，并补充了参数含义和注意事项，完整切题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r013",
+      "question": "在 LangChain 中怎么用 Ollama 调用 deepseek-r1:1.5b 模型？",
+      "answer_chars": 668,
+      "answer_latency_s": 3.5,
+      "refusal": false,
+      "faith_total": 7,
+      "faith_supported": 6,
+      "faith_unsupported": [
+        "可使用 `ChatOllama(model=\"deepseek-r1:1.5b\")` 实例化模型。"
+      ],
+      "faith_parse_error": false,
+      "relevance": 4,
+      "relevance_reason": "答案直接给出了在 LangChain 中通过 Ollama 使用 deepseek-r1:1.5b 的核心方式，包括运行模型、使用 ChatOllama 和 init_chat_model 初始化模型，内容切题。但未展示实际调用（如 invoke）及安装 langchain-ollama 依赖，细节略有缺失。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r014",
+      "question": "怎么用 TypeVar 和 Generic 定义一个泛型 Box 类，并让它通过 get 方法返回 T 类型的内容？",
+      "answer_chars": 841,
+      "answer_latency_s": 3.12,
+      "refusal": false,
+      "faith_total": 6,
+      "faith_supported": 2,
+      "faith_unsupported": [
+        "T = TypeVar(\"T\") 声明一个类型变量 T，它代表“某种类型”，具体是什么由使用时决定。",
+        "class Box(Generic[T]) 让 Box 成为泛型类，表示“一个装 T 的盒子”；Generic[T] 是泛型基类，用来告诉类型检查器 T 是类级参数。",
+        "content: T 使 self.content 的类型为 T；get(self) -> T 与 __init__ 里的 T 是同一个类型变量，保证“放进去什么类型，取出来就是什么类型”。",
+        "使用示例中 Box(42) 静态类型推断为 Box[int]、b.get() 返回 int；Box(\"hello\") 为 Box[str]、s.get() 返回 str；也可显式标注 b: Box[int] = Box(42)。"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接给出了使用 TypeVar 和 Generic 定义泛型 Box 类的完整代码，并清晰说明 get 方法返回 T 类型内容；还补充了关键点和使用示例，完全切题且完整。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r015",
+      "question": "Python 类型注解会在运行时强制检查类型吗？如果函数标注了 `-> int` 却返回字符串会怎样？",
+      "answer_chars": 315,
+      "answer_latency_s": 2.13,
+      "refusal": false,
+      "faith_total": 6,
+      "faith_supported": 6,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接明确回答运行时不会强制检查类型，并说明标注 `-> int` 却返回字符串时运行时不报错、静态检查工具会报错，还补充了类型注解用途，完整切题。",
+      "n_context_docs": 6
+    },
+    {
+      "id": "r016",
+      "question": "在 typing 模块的示例中，如何为键是字符串、值是整数的字典变量 scores 写类型注解？",
+      "answer_chars": 276,
+      "answer_latency_s": 1.37,
+      "refusal": false,
+      "faith_total": 4,
+      "faith_supported": 3,
+      "faith_unsupported": [
+        "Python 3.9+ 也可以直接写成 `scores: dict[str, int] = {'数学': 90, '语文': 85}`。"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接、完整地给出了 typing 模块中字典 scores 的类型注解写法 `Dict[str, int]`，并说明了含义和导入方式，还补充了 Python 3.9+ 的等价写法，完全切题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r017",
+      "question": "调用 DeepSeek 时，怎么传递厂商特有的扩展参数？",
+      "answer_chars": 427,
+      "answer_latency_s": 1.73,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 5,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案明确说明调用 DeepSeek 时厂商特有的扩展参数应通过初始化模型时的 extra_body 参数传递，并给出示例代码，直接且完整地回答了问题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r018",
+      "question": "调用 model.invoke 时，怎么分别捕获配置错误、网络错误和未知错误并打印对应提示？",
+      "answer_chars": 895,
+      "answer_latency_s": 3.29,
+      "refusal": false,
+      "faith_total": 10,
+      "faith_supported": 2,
+      "faith_unsupported": [
+        "具体异常必须写在前面、Exception 兜底放最后，否则前面分支永远不会被执行；因为 Exception 是所有异常的父类，放前面会拦掉后续分支。",
+        "ValueError 对应配置类问题，如参数/模型配置非法。",
+        "ConnectionError 对应网络连接失败、请求不通。",
+        "Exception 对应其他未预料到的异常。",
+        "try 块内尽量只放 model.invoke(...) 这一句，避免把无关代码异常误判成模型调用错误。"
+      ],
+      "faith_parse_error": false,
+      "relevance": 4,
+      "relevance_reason": "答案直接给出了用 try/except 按异常类型分别捕获并打印提示的写法，且说明了 Exception 兜底应放最后，整体切题。但将配置错误固定映射为 ValueError、网络错误固定映射为 ConnectionError，可能不完全符合实际 model.invoke 框架的异常类型，缺少按实际异常类调整的说明。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r019",
+      "question": "调用 invoke 时怎么通过 config 动态覆盖初始化参数中的 model 和 temperature？",
+      "answer_chars": 1158,
+      "answer_latency_s": 2.56,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 4,
+      "faith_unsupported": [
+        "这种覆盖只影响本次调用，是单次动态调整，不会改变模型的初始化状态，适合按任务临时切换模型或调节随机性。"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案明确说明通过 config.configurable 传入 model 和 temperature，并强调需在初始化时声明 configurable_fields，还给出 invoke 示例和注意事项，直接完整回答了如何动态覆盖。",
+      "n_context_docs": 7
+    },
+    {
+      "id": "r020",
+      "question": "AIMessage 的 usage_metadata 字段包含哪些标准化的 token 消耗信息？",
+      "answer_chars": 183,
+      "answer_latency_s": 1.47,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 5,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接列出了 usage_metadata 包含的标准 token 用量字段：input_tokens、output_tokens 和 total_tokens，完整回答了问题。",
+      "n_context_docs": 7
+    },
+    {
+      "id": "r021",
+      "question": "field_validator 的 mode='before' 在什么时机执行，收到的是什么值？",
+      "answer_chars": 324,
+      "answer_latency_s": 1.85,
+      "refusal": true,
+      "faith_total": 10,
+      "faith_supported": 9,
+      "faith_unsupported": [
+        "`mode='before'` 的执行时机被扩充解释为“在该字段的类型解析/内置校验规则应用之前”"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接明确回答了执行时机和接收值：mode='before' 在内置校验/类型解析之前执行，收到尚未解析的原始输入；内容切题且完整，没有明显缺漏。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r022",
+      "question": "在 Pydantic 的 Field() 中，description 参数对 LLM 结构化输出有什么意义？",
+      "answer_chars": 791,
+      "answer_latency_s": 4.44,
+      "refusal": false,
+      "faith_total": 7,
+      "faith_supported": 4,
+      "faith_unsupported": [
+        "描述会随 schema 一起传给模型，成为模型“填字段”的依据；描述含糊或缺失，抽取结果的准确度会下降。",
+        "description 属于提供给模型的语义提示（schema 元信息），而不是本地校验规则；即便严格模式下调值域约束失效，描述仍然是引导模型输出的主要手段。",
+        "`description` 是“用自然语言给模型下字段级指令”的通道，属于提升结构化输出准确率的最低成本手段；但它终究是提示而非强制约束，不要指望它替代校验。"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案围绕 `Field(description=...)` 对 LLM 结构化输出的意义展开，明确说明其帮助模型理解字段语义、随 schema 传给模型并影响输出质量，还指出它是提示而非强制约束，并区分了校验约束。内容直接、完整且切题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r024",
+      "question": "使用模型提供商专用库初始化模型时，不同提供商的参数名可能有什么差异，应该怎么办？",
+      "answer_chars": 146,
+      "answer_latency_s": 1.78,
+      "refusal": false,
+      "faith_total": 3,
+      "faith_supported": 3,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接回应了问题：指出不同提供商参数名可能不同，并举例说明 `api_base` 与 `base_url` 的差异；同时明确给出应对方法，即查阅源码确认具体参数名。额外提到密钥管理虽非核心，但不影响回答切题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r025",
+      "question": "在 .env 中启用 LangSmith 监控并配置 WebUI 地址和 API Key 时，需要写入哪些环境变量？",
+      "answer_chars": 462,
+      "answer_latency_s": 1.93,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 5,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接列出了启用 LangSmith 监控所需的 LANGSMITH_TRACING、配置 WebUI/API 地址的 LANGSMITH_ENDPOINT、API Key 的 LANGSMITH_API_KEY，并额外给出项目名称配置，内容与问题高度匹配且完整。",
+      "n_context_docs": 7
+    },
+    {
+      "id": "r026",
+      "question": "Python 里怎么查看一个函数上标注的类型注解？",
+      "answer_chars": 479,
+      "answer_latency_s": 1.99,
+      "refusal": false,
+      "faith_total": 6,
+      "faith_supported": 5,
+      "faith_unsupported": [
+        "`from __future__ import annotations` 需要写在文件开头"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接说明了使用函数对象的 __annotations__ 属性查看类型注解，并给出示例；还补充了延迟求值和运行时行为，内容准确且完整回答了问题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r027",
+      "question": "在 LangChain 中如何用 batch_as_completed 按完成顺序批量调用模型，并打印每个响应的索引和内容？",
+      "answer_chars": 292,
+      "answer_latency_s": 1.54,
+      "refusal": false,
+      "faith_total": 4,
+      "faith_supported": 1,
+      "faith_unsupported": [
+        "`inputs` 是批量输入列表，例如 `[\"问题1\", \"问题2\", \"问题3\"]`",
+        "`index` 是响应对应的输入索引",
+        "`response.content` 是模型返回的文本内容"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接给出了 `batch_as_completed` 的调用方式和遍历代码，并说明 `index` 是输入索引、`response.content` 是响应内容，同时指出结果按完成顺序返回，完整回答了问题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r028",
+      "question": "用统一接口调用通义千问时，提供商参数该怎么写？",
+      "answer_chars": 875,
+      "answer_latency_s": 3.4,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 4,
+      "faith_unsupported": [
+        "代码示例中 base_url 指向通义千问的兼容端点"
+      ],
+      "faith_parse_error": false,
+      "relevance": 4,
+      "relevance_reason": "答案直接回应了提供商参数写法，明确建议显式设置 model_provider=\"openai\" 并通过 OpenAI 兼容接口调用通义千问，还给出了代码示例。但未确认通义千问兼容接口的具体 base_url，也未确认统一接口是否支持 tongyi/qwen 作为 provider 名，细节略欠缺，因此属于基本回答。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r029",
+      "question": "在 Pydantic 中如何用 Annotated 和 Field 定义一个必须大于 0 的可复用整数类型 PositiveInt？",
+      "answer_chars": 478,
+      "answer_latency_s": 1.68,
+      "refusal": false,
+      "faith_total": 4,
+      "faith_supported": 4,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接给出了用 `Annotated[int, Field(gt=0)]` 定义可复用 `PositiveInt` 的方法，并展示了在模型字段中的使用方式，完整切题；`ShortStr` 的例子虽略有扩展，但不影响回答质量。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r030",
+      "question": "LangSmith 的 Tracing 和 Monitoring 两项核心能力分别负责什么？",
+      "answer_chars": 505,
+      "answer_latency_s": 2.25,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 5,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接分别说明了 LangSmith 的 Tracing 和 Monitoring 两项核心能力：Tracing 负责单次调用完整链路记录，用于开发调试和问题排查；Monitoring 负责生产环境性能看板与整体运行指标监控，如错误率、延迟、成本等。内容完整切题。",
+      "n_context_docs": 7
+    },
+    {
+      "id": "r031",
+      "question": "在 Pydantic 中用 BaseModel 定义模型时，字段写成 country: str = \"US\" 表示必填还是可选？",
+      "answer_chars": 322,
+      "answer_latency_s": 1.6,
+      "refusal": false,
+      "faith_total": 4,
+      "faith_supported": 4,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接明确回答为“可选”，并正确解释 country: str = \"US\" 因有默认值而可选，创建实例时可省略且取默认值 \"US\"。内容完整切题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r032",
+      "question": "Pydantic 在宽松模式下如何处理字符串 \"500\"，以及如何避免序列化/反序列化代码重复？",
+      "answer_chars": 471,
+      "answer_latency_s": 2.53,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 5,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 4,
+      "relevance_reason": "答案明确回答了宽松模式下 int 字段会将字符串 \"500\" 自动转换为整数 500，并给出了示例；同时说明可用 Pydantic 的 model_dump()、model_dump_json() 等一键方法避免手写序列化代码，并提及相关输出参数。不过对“反序列化”避免重复的具体方法（如 model_validate）没有明确展开，细节略有缺失。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r033",
+      "question": "使用 OpenRouter 时，除了专用集成 ChatOpenRouter，还可以怎样通过 ChatOpenAI 调用？",
+      "answer_chars": 476,
+      "answer_latency_s": 1.96,
+      "refusal": false,
+      "faith_total": 6,
+      "faith_supported": 5,
+      "faith_unsupported": [
+        "同时按需传入 API Key"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接说明了可通过 ChatOpenAI 指定 OpenRouter 的 base_url 并传入 API Key 来调用，还给出了示例代码和原理说明，完整且切题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r034",
+      "question": "temperature 参数的默认值是多少？0.0~0.3 范围适合什么任务？",
+      "answer_chars": 77,
+      "answer_latency_s": 0.89,
+      "refusal": false,
+      "faith_total": 2,
+      "faith_supported": 2,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接说明了 temperature 的默认值为 0.7，并明确回答 0.0~0.3 范围适合精确任务，如数学、代码、数据提取，完整切题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r035",
+      "question": "在 LangChain 中构造 messages 列表时，SystemMessage 和 HumanMessage 应该从哪个模块导入、怎么写？",
+      "answer_chars": 475,
+      "answer_latency_s": 2.12,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 4,
+      "faith_unsupported": [
+        "如果需要表示模型回复，也可以加入 AIMessage，例如在 messages 列表中构造 AIMessage(\"斐波那契数列是……\")"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接说明了 SystemMessage 和 HumanMessage 应从 langchain_core.messages 导入，并给出了构造 messages 列表的示例，完整回答了导入模块和写法。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r036",
+      "question": "VS Code 内置的 Pylance 是基于哪个工具提供实时类型检查的？",
+      "answer_chars": 44,
+      "answer_latency_s": 0.8,
+      "refusal": false,
+      "faith_total": 1,
+      "faith_supported": 1,
+      "faith_unsupported": [],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接指出 Pylance 基于 pyright 提供实时类型检查，准确且完整地回答了问题。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r037",
+      "question": "Python 的类型注解对运行时有什么影响，检查时机通常借助什么工具？",
+      "answer_chars": 866,
+      "answer_latency_s": 2.91,
+      "refusal": false,
+      "faith_total": 13,
+      "faith_supported": 9,
+      "faith_unsupported": [
+        "注解可通过反射等方式读取",
+        "mypy 是主流静态类型检查器",
+        "pyright 是微软出品",
+        "Pylance 是 VS Code 内置插件"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接且完整地说明了 Python 类型注解在运行时会被解释器忽略、不会强制类型检查（但可通过反射获取），并明确指出类型检查通常发生在运行前的静态检查阶段，列举了 mypy、pyright/Pylance 等常用工具，还补充了 Pydantic 等运行时校验库的区别，切题且细节充分。",
+      "n_context_docs": 8
+    },
+    {
+      "id": "r038",
+      "question": "在 Person 类中，name 和 age 这两个实例属性如何做类型注解，__init__ 方法又如何标注参数和返回类型？",
+      "answer_chars": 876,
+      "answer_latency_s": 4.19,
+      "refusal": false,
+      "faith_total": 9,
+      "faith_supported": 4,
+      "faith_unsupported": [
+        "age 同理写成 self.age: int = age",
+        "构造方法不返回任何值",
+        "没有返回值就写 -> None",
+        "两种写法可以任选，也可以结合使用（类体声明 + __init__ 赋值）",
+        "以上内容均来自上下文中的 python.md"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接且完整地说明了 Person 类中 name 和 age 的类型注解方式，并给出了 __init__ 参数标注和 -> None 返回类型标注，包含类体声明与 __init__ 内标注两种写法，切题充分。",
+      "n_context_docs": 7
+    },
+    {
+      "id": "r039",
+      "question": "find_user 函数的返回类型如何标注为可能返回字符串或 None？",
+      "answer_chars": 378,
+      "answer_latency_s": 1.54,
+      "refusal": false,
+      "faith_total": 5,
+      "faith_supported": 4,
+      "faith_unsupported": [
+        "Python 3.10+ 的 `str | None` 写法是更简洁的联合类型"
+      ],
+      "faith_parse_error": false,
+      "relevance": 5,
+      "relevance_reason": "答案直接、完整地回答了问题，给出了 `Optional[str]` 和 Python 3.10+ 的 `str | None` 两种标注方式，并配有函数示例和含义说明。",
+      "n_context_docs": 8
+    }
+  ]
+}

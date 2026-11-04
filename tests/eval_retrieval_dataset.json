@@ -1,0 +1,485 @@
+[
+  {
+    "id": "r001",
+    "question": "LangChain 的 Model I/O 流程包含哪三个步骤？",
+    "must_contain": [
+      "Format（PromptTemplate）",
+      "Predict（Model）",
+      "Parse（OutputParser）"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 1. 模型调用基础",
+    "gold_hits": 1,
+    "chunk_chars": 184
+  },
+  {
+    "id": "r002",
+    "question": "Python 类型注解有哪些作用，运行时是否会强制检查类型？",
+    "must_contain": [
+      "IDE 智能提示",
+      "pyright",
+      "完全忽略"
+    ],
+    "source": "python.md",
+    "header": "一、类型注解（Type Hints） > 1.1 为什么需要类型注解？",
+    "gold_hits": 1,
+    "chunk_chars": 290
+  },
+  {
+    "id": "r003",
+    "question": "为什么 Dog 类没有继承 Speaker，也能作为参数传给 make_speak？",
+    "must_contain": [
+      "Speaker(Protocol)",
+      "make_speak(Dog())",
+      "不需要继承 Speaker"
+    ],
+    "source": "python.md",
+    "header": "一、类型注解（Type Hints） > 1.3 常用类型",
+    "gold_hits": 1,
+    "chunk_chars": 264
+  },
+  {
+    "id": "r004",
+    "question": "在 Pydantic 模型中，list 类型字段怎样设置默认值才能避免所有实例共享同一个列表？",
+    "must_contain": [
+      "Field(default_factory=list)",
+      "所有实例共享同一个列表"
+    ],
+    "source": "python.md",
+    "header": "二、Pydantic > 2.3 字段约束：`Field()`",
+    "gold_hits": 1,
+    "chunk_chars": 229
+  },
+  {
+    "id": "r005",
+    "question": "在 LangChain 的模型调用方法中，batch() 有什么特点，适合什么场景？",
+    "must_contain": [
+      "batch()",
+      "批量并行处理多个输入",
+      "高并发"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 4. 模型调用方法 > 4.1 同步/异步方法概览",
+    "gold_hits": 1,
+    "chunk_chars": 520
+  },
+  {
+    "id": "r006",
+    "question": "LangSmith 里哪个功能用于人工标注和纠正回答？",
+    "must_contain": [
+      "Annotation Queues",
+      "数据清洗与微调"
+    ],
+    "source": "langchain.md",
+    "header": "第二章：LangSmith > 2. 核心功能速览",
+    "gold_hits": 1,
+    "chunk_chars": 355
+  },
+  {
+    "id": "r007",
+    "question": "在 LangSmith 中如何创建 API Key，生成后需要注意什么？",
+    "must_contain": [
+      "Settings → API Keys",
+      "Create API Key",
+      "只显示一次"
+    ],
+    "source": "langchain.md",
+    "header": "第二章：LangSmith > 3. 账号准备与 API Key",
+    "gold_hits": 1,
+    "chunk_chars": 181
+  },
+  {
+    "id": "r008",
+    "question": "模型调用时，用字典列表传入 system 和 user 消息的推荐写法是什么？",
+    "must_contain": [
+      "字典列表（推荐）",
+      "{\"role\": \"system\", \"content\": \"你是数学老师\"}",
+      "什么是斐波那契数列？"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 4. 模型调用方法 > 4.2 输入格式",
+    "gold_hits": 1,
+    "chunk_chars": 221
+  },
+  {
+    "id": "r009",
+    "question": "在 Python 类型注解里，如何声明一个字符串列表和一个键为字符串、值为整数的字典？",
+    "must_contain": [
+      "names: list[str] = [\"张三\", \"李四\"]",
+      "scores: dict[str, int] = {\"数学\": 90}"
+    ],
+    "source": "python.md",
+    "header": "一、类型注解（Type Hints） > 1.3 常用类型",
+    "gold_hits": 1,
+    "chunk_chars": 162
+  },
+  {
+    "id": "r010",
+    "question": "Pydantic 的 Event 模型如何把传入的字符串 \"500\" 和 \"2025-05-15\" 转换为字段类型？",
+    "must_contain": [
+      "attendees: int",
+      "event_date: date",
+      "\"500\" → 500 (int)"
+    ],
+    "source": "python.md",
+    "header": "二、Pydantic > 2.2 基础：用 `BaseModel` 定义模型",
+    "gold_hits": 1,
+    "chunk_chars": 205
+  },
+  {
+    "id": "r011",
+    "question": "LangSmith 的 Evaluators 功能支持什么打分方式，适合在哪个阶段使用？",
+    "must_contain": [
+      "Evaluators",
+      "LLM-as-a-judge",
+      "量化评估"
+    ],
+    "source": "langchain.md",
+    "header": "第二章：LangSmith > 2. 核心功能速览",
+    "gold_hits": 1,
+    "chunk_chars": 798
+  },
+  {
+    "id": "r012",
+    "question": "在 Pydantic 中用 Field() 如何限制 price 字段必须大于 0 且不超过 999999.99？",
+    "must_contain": [
+      "gt=0",
+      "le=999_999.99",
+      "美元价格，必须为正"
+    ],
+    "source": "python.md",
+    "header": "二、Pydantic > 2.3 字段约束：`Field()`",
+    "gold_hits": 1,
+    "chunk_chars": 556
+  },
+  {
+    "id": "r013",
+    "question": "在 LangChain 中怎么用 Ollama 调用 deepseek-r1:1.5b 模型？",
+    "must_contain": [
+      "ChatOllama",
+      "model_provider=\"ollama\""
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 2. 模型初始化三种方式 > 2.3 本地模型（Ollama）",
+    "gold_hits": 1,
+    "chunk_chars": 267
+  },
+  {
+    "id": "r014",
+    "question": "怎么用 TypeVar 和 Generic 定义一个泛型 Box 类，并让它通过 get 方法返回 T 类型的内容？",
+    "must_contain": [
+      "T = TypeVar(\"T\")",
+      "class Box(Generic[T])",
+      "def get(self) -> T"
+    ],
+    "source": "python.md",
+    "header": "一、类型注解（Type Hints） > 1.3 常用类型",
+    "gold_hits": 1,
+    "chunk_chars": 245
+  },
+  {
+    "id": "r015",
+    "question": "Python 类型注解会在运行时强制检查类型吗？如果函数标注了 `-> int` 却返回字符串会怎样？",
+    "must_contain": [
+      "运行时完全忽略",
+      "mypy 会报错",
+      "以为类型注解会强制检查"
+    ],
+    "source": "python.md",
+    "header": "一、类型注解（Type Hints） > 1.7 常见误区与最佳实践",
+    "gold_hits": 1,
+    "chunk_chars": 780
+  },
+  {
+    "id": "r016",
+    "question": "在 typing 模块的示例中，如何为键是字符串、值是整数的字典变量 scores 写类型注解？",
+    "must_contain": [
+      "scores: Dict[str, int]",
+      "from typing import List, Dict, Tuple, Set"
+    ],
+    "source": "python.md",
+    "header": "一、类型注解（Type Hints） > 1.3 常用类型",
+    "gold_hits": 1,
+    "chunk_chars": 397
+  },
+  {
+    "id": "r017",
+    "question": "调用 DeepSeek 时，怎么传递厂商特有的扩展参数？",
+    "must_contain": [
+      "extra_body",
+      "thinking"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 5. 高级主题 > 5.5 传递额外参数",
+    "gold_hits": 1,
+    "chunk_chars": 255
+  },
+  {
+    "id": "r018",
+    "question": "调用 model.invoke 时，怎么分别捕获配置错误、网络错误和未知错误并打印对应提示？",
+    "must_contain": [
+      "model.invoke",
+      "except ValueError",
+      "except ConnectionError"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 4. 模型调用方法 > 4.6 异常处理",
+    "gold_hits": 1,
+    "chunk_chars": 216
+  },
+  {
+    "id": "r019",
+    "question": "调用 invoke 时怎么通过 config 动态覆盖初始化参数中的 model 和 temperature？",
+    "must_contain": [
+      "configurable",
+      "configurable_fields",
+      "temperature"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 5. 高级主题 > 5.1 运行时 config 参数",
+    "gold_hits": 2,
+    "chunk_chars": 412
+  },
+  {
+    "id": "r020",
+    "question": "AIMessage 的 usage_metadata 字段包含哪些标准化的 token 消耗信息？",
+    "must_contain": [
+      "usage_metadata",
+      "input_tokens",
+      "output_tokens"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 4. 模型调用方法 > 4.3 返回值 `AIMessage`",
+    "gold_hits": 2,
+    "chunk_chars": 305
+  },
+  {
+    "id": "r021",
+    "question": "field_validator 的 mode='before' 在什么时机执行，收到的是什么值？",
+    "must_contain": [
+      "mode='before'",
+      "内置校验前",
+      "原始输入"
+    ],
+    "source": "python.md",
+    "header": "二、Pydantic > 2.4 验证器：`field_validator` 和 `model_validator`",
+    "gold_hits": 1,
+    "chunk_chars": 707
+  },
+  {
+    "id": "r022",
+    "question": "在 Pydantic 的 Field() 中，description 参数对 LLM 结构化输出有什么意义？",
+    "must_contain": [
+      "description",
+      "对 LLM 结构化输出至关重要"
+    ],
+    "source": "python.md",
+    "header": "二、Pydantic > 2.3 字段约束：`Field()`",
+    "gold_hits": 1,
+    "chunk_chars": 631
+  },
+  {
+    "id": "r024",
+    "question": "使用模型提供商专用库初始化模型时，不同提供商的参数名可能有什么差异，应该怎么办？",
+    "must_contain": [
+      "api_base",
+      "base_url",
+      "需查源码"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 2. 模型初始化三种方式 > 2.1 使用模型提供商专用库（最直接）",
+    "gold_hits": 1,
+    "chunk_chars": 333
+  },
+  {
+    "id": "r025",
+    "question": "在 .env 中启用 LangSmith 监控并配置 WebUI 地址和 API Key 时，需要写入哪些环境变量？",
+    "must_contain": [
+      "LANGSMITH_TRACING=true",
+      "LANGSMITH_ENDPOINT=https://api.smith.langchain.com",
+      "LANGSMITH_API_KEY=<YOUR_API_KEY>"
+    ],
+    "source": "langchain.md",
+    "header": "第二章：LangSmith > 4. 环境变量配置",
+    "gold_hits": 1,
+    "chunk_chars": 281
+  },
+  {
+    "id": "r026",
+    "question": "Python 里怎么查看一个函数上标注的类型注解？",
+    "must_contain": [
+      "__annotations__"
+    ],
+    "source": "python.md",
+    "header": "一、类型注解（Type Hints） > 1.4 类型注解的运行时行为",
+    "gold_hits": 1,
+    "chunk_chars": 216
+  },
+  {
+    "id": "r027",
+    "question": "在 LangChain 中如何用 batch_as_completed 按完成顺序批量调用模型，并打印每个响应的索引和内容？",
+    "must_contain": [
+      "model.batch_as_completed(inputs)",
+      "index, response",
+      "response.content"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 4. 模型调用方法 > 4.5 批量调用",
+    "gold_hits": 1,
+    "chunk_chars": 196
+  },
+  {
+    "id": "r028",
+    "question": "用统一接口调用通义千问时，提供商参数该怎么写？",
+    "must_contain": [
+      "init_chat_model",
+      "qwen-plus",
+      "model_provider"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 2. 模型初始化三种方式 > 2.2 统一接口 `init_chat_model()`（LangChain 1.x 推荐）",
+    "gold_hits": 1,
+    "chunk_chars": 501
+  },
+  {
+    "id": "r029",
+    "question": "在 Pydantic 中如何用 Annotated 和 Field 定义一个必须大于 0 的可复用整数类型 PositiveInt？",
+    "must_contain": [
+      "PositiveInt",
+      "Annotated[int, Field(gt=0)]",
+      "Field(gt=0)"
+    ],
+    "source": "python.md",
+    "header": "二、Pydantic > 2.3 字段约束：`Field()`",
+    "gold_hits": 1,
+    "chunk_chars": 257
+  },
+  {
+    "id": "r030",
+    "question": "LangSmith 的 Tracing 和 Monitoring 两项核心能力分别负责什么？",
+    "must_contain": [
+      "Tracing",
+      "记录每次调用的完整链路",
+      "生产环境性能看板"
+    ],
+    "source": "langchain.md",
+    "header": "第二章：LangSmith > 1. LangSmith 是什么",
+    "gold_hits": 1,
+    "chunk_chars": 323
+  },
+  {
+    "id": "r031",
+    "question": "在 Pydantic 中用 BaseModel 定义模型时，字段写成 country: str = \"US\" 表示必填还是可选？",
+    "must_contain": [
+      "country: str = \"US\"",
+      "可选，有默认值",
+      "BaseModel"
+    ],
+    "source": "python.md",
+    "header": "二、Pydantic > 2.2 基础：用 `BaseModel` 定义模型",
+    "gold_hits": 1,
+    "chunk_chars": 745
+  },
+  {
+    "id": "r032",
+    "question": "Pydantic 在宽松模式下如何处理字符串 \"500\"，以及如何避免序列化/反序列化代码重复？",
+    "must_contain": [
+      "\"500\"",
+      "model_dump()",
+      "model_dump_json()"
+    ],
+    "source": "python.md",
+    "header": "二、Pydantic > 2.1 为什么需要 Pydantic？",
+    "gold_hits": 1,
+    "chunk_chars": 455
+  },
+  {
+    "id": "r033",
+    "question": "使用 OpenRouter 时，除了专用集成 ChatOpenRouter，还可以怎样通过 ChatOpenAI 调用？",
+    "must_contain": [
+      "ChatOpenRouter",
+      "ChatOpenAI",
+      "base_url"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 2. 模型初始化三种方式 > 2.4 中转平台",
+    "gold_hits": 1,
+    "chunk_chars": 158
+  },
+  {
+    "id": "r034",
+    "question": "temperature 参数的默认值是多少？0.0~0.3 范围适合什么任务？",
+    "must_contain": [
+      "temperature",
+      "0.7",
+      "精确任务"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 3. 常用初始化参数",
+    "gold_hits": 1,
+    "chunk_chars": 598
+  },
+  {
+    "id": "r035",
+    "question": "在 LangChain 中构造 messages 列表时，SystemMessage 和 HumanMessage 应该从哪个模块导入、怎么写？",
+    "must_contain": [
+      "from langchain_core.messages import SystemMessage, HumanMessage, AIMessage",
+      "messages = [SystemMessage(\"...\"), HumanMessage(\"...\")]"
+    ],
+    "source": "langchain.md",
+    "header": "第一章：模型调用 > 4. 模型调用方法 > 4.2 输入格式",
+    "gold_hits": 1,
+    "chunk_chars": 155
+  },
+  {
+    "id": "r036",
+    "question": "VS Code 内置的 Pylance 是基于哪个工具提供实时类型检查的？",
+    "must_contain": [
+      "Pylance",
+      "pyright",
+      "实时类型检查"
+    ],
+    "source": "python.md",
+    "header": "一、类型注解（Type Hints） > 1.5 静态类型检查工具",
+    "gold_hits": 1,
+    "chunk_chars": 245
+  },
+  {
+    "id": "r037",
+    "question": "Python 的类型注解对运行时有什么影响，检查时机通常借助什么工具？",
+    "must_contain": [
+      "完全忽略",
+      "静态工具（mypy）"
+    ],
+    "source": "python.md",
+    "header": "一、类型注解（Type Hints） > 1.6 与 Java 对比",
+    "gold_hits": 1,
+    "chunk_chars": 708
+  },
+  {
+    "id": "r038",
+    "question": "在 Person 类中，name 和 age 这两个实例属性如何做类型注解，__init__ 方法又如何标注参数和返回类型？",
+    "must_contain": [
+      "class Person",
+      "name: str",
+      "def __init__(self, name: str, age: int) -> None"
+    ],
+    "source": "python.md",
+    "header": "一、类型注解（Type Hints） > 1.2 基本语法",
+    "gold_hits": 1,
+    "chunk_chars": 165
+  },
+  {
+    "id": "r039",
+    "question": "find_user 函数的返回类型如何标注为可能返回字符串或 None？",
+    "must_contain": [
+      "find_user",
+      "Optional[str]",
+      "| None"
+    ],
+    "source": "python.md",
+    "header": "一、类型注解（Type Hints） > 1.3 常用类型",
+    "gold_hits": 1,
+    "chunk_chars": 162
+  }
+]
